@@ -109,14 +109,16 @@ export default async function Home() {
             href="/sample"
             className="group block rounded-2xl bg-card-pure p-4 shadow-lg ring-1 ring-line/70 transition active:scale-[0.99]"
           >
-            <div className="grid grid-cols-[108px_minmax(0,1fr)_112px] items-center gap-4">
-              <div className="relative aspect-square w-[108px] overflow-hidden rounded-xl ring-1 ring-line">
+            <div className="grid grid-cols-[68px_minmax(0,1fr)_56px] items-center gap-2 min-[380px]:grid-cols-[78px_minmax(0,1fr)_72px] min-[380px]:gap-3 sm:grid-cols-[92px_minmax(0,1fr)_112px] sm:gap-4">
+              <div className="relative h-[104px] w-[68px] overflow-hidden rounded-xl ring-1 ring-line min-[380px]:h-[108px] min-[380px]:w-[78px] sm:h-[118px] sm:w-[92px]">
                 <Image
-                  src="/thumb-kansai.png"
+                  src="/thumb-kansai-portrait.jpg"
                   alt="2026 關西行 — 倉敷美觀地區"
-                  fill
-                  sizes="108px"
-                  className="object-cover"
+                  width={312}
+                  height={472}
+                  preload
+                  unoptimized
+                  className="h-full w-full object-cover"
                 />
               </div>
 
@@ -127,16 +129,16 @@ export default async function Home() {
                   </svg>
                   範例行程
                 </div>
-                <h2 className="truncate text-[17px] font-extrabold text-navy">
+                <h2 className="whitespace-nowrap text-[16px] font-extrabold leading-tight text-navy min-[380px]:text-[17px]">
                   {trip.title}
                 </h2>
-                <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted">
+                <div className="mt-1 flex items-center gap-1.5 text-[8px] text-muted min-[380px]:text-[11px]">
                   <svg width="12" height="12" className="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <rect x="3" y="5" width="18" height="16" rx="2" />
                     <path d="M3 9h18M8 3v4M16 3v4" />
                   </svg>
-                  <span className="truncate">
-                    {formatDate(trip.start_date)} – {formatDate(trip.end_date)}
+                  <span className="whitespace-nowrap">
+                    {formatDate(trip.start_date)}-{formatDate(trip.end_date)}
                   </span>
                 </div>
                 {trip.subtitle && (
@@ -144,18 +146,18 @@ export default async function Home() {
                     <svg width="12" height="12" className="shrink-0 text-orange" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                       <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" />
                     </svg>
-                    <span className="truncate">{trip.subtitle}</span>
+                    <span className="whitespace-nowrap">{trip.subtitle}</span>
                   </div>
                 )}
               </div>
 
-              <div className="relative h-28 w-28 shrink-0">
+              <div className="relative h-14 w-14 shrink-0 min-[380px]:h-[72px] min-[380px]:w-[72px] sm:h-28 sm:w-28">
                 <Image
                   src="/route-map.png"
                   alt=""
                   fill
                   sizes="112px"
-                  className="object-contain"
+                  className="translate-x-2 scale-[1.18] object-contain min-[380px]:translate-x-3 min-[380px]:scale-[1.22] sm:translate-x-4 sm:scale-110"
                   aria-hidden
                 />
               </div>
