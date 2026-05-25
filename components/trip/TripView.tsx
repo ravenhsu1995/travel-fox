@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Day, Trip } from "@/lib/types";
 import HotelCard from "./HotelCard";
-import RisksCard from "./RisksCard";
 import TimelineItemView from "./TimelineItemView";
 
 type Props = {
@@ -88,24 +87,9 @@ export default function TripView({
                 {active.theme}
               </h2>
             )}
-            {trip.companions.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {trip.companions.map((c) => (
-                  <span
-                    key={c}
-                    className="rounded-full bg-gold-pale px-2 py-0.5 text-[10px] font-semibold text-gold"
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            )}
           </section>
 
           {active.hotel && <HotelCard hotel={active.hotel} />}
-          {active.risks && active.risks.length > 0 && (
-            <RisksCard risks={active.risks} />
-          )}
 
           {active.timeline.length === 0 ? (
             <div className="rounded-xl border border-dashed border-line-2 bg-card p-6 text-center text-sm text-muted">

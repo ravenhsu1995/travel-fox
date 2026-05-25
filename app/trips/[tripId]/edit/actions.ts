@@ -11,7 +11,6 @@ type SaveTripPayload = {
   cover_emoji: string;
   start_date: string;
   end_date: string;
-  companions: string[];
 };
 
 type SaveDayPayload = {
@@ -19,7 +18,6 @@ type SaveDayPayload = {
   trip_id: string;
   theme: string | null;
   hotel: HotelInfo | null;
-  risks: string[];
   timeline: TimelineItem[];
 };
 
@@ -33,7 +31,6 @@ export async function saveTrip(payload: SaveTripPayload) {
       cover_emoji: payload.cover_emoji,
       start_date: payload.start_date,
       end_date: payload.end_date,
-      companions: payload.companions,
     })
     .eq("id", payload.id);
 
@@ -52,7 +49,6 @@ export async function saveDay(payload: SaveDayPayload) {
     .update({
       theme: payload.theme,
       hotel: payload.hotel,
-      risks: payload.risks,
       timeline: payload.timeline,
     })
     .eq("id", payload.id);

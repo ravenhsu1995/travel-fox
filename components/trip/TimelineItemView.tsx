@@ -1,14 +1,7 @@
-"use client";
-
-import { useState } from "react";
 import type { TimelineItem } from "@/lib/types";
 import { googleMapUrl } from "@/lib/maps";
-import MapView from "@/components/map/MapView";
 
 export default function TimelineItemView({ item }: { item: TimelineItem }) {
-  const [openMap, setOpenMap] = useState(false);
-  const hasMap = !!item.coords;
-
   return (
     <article className="relative pl-12">
       <div className="absolute left-3 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-white shadow-sm">
@@ -29,20 +22,6 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           </a>
         )}
       </div>
-
-      {hasMap && (
-        <button
-          onClick={() => setOpenMap((v) => !v)}
-          className="mb-2 text-[11px] font-semibold text-muted hover:text-ink"
-        >
-          {openMap ? "▲ 收合地圖" : "▼ 展開地圖"}
-        </button>
-      )}
-      {openMap && item.coords && (
-        <div className="mb-3">
-          <MapView coords={item.coords} mapQ={item.mapQ} label={item.label} />
-        </div>
-      )}
 
       {item.transport && item.transport.length > 0 && (
         <div className="mb-3 space-y-2">
@@ -113,50 +92,27 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
       )}
 
       {item.meals && item.meals.length > 0 && (
-        <div className="mb-3 space-y-3">
+        <div className="mb-3 space-y-2">
           {item.meals.map((meal, i) => (
-            <div key={i} className="rounded-md bg-gold-pale p-2.5">
-              <div className="mb-2 text-[11px] font-bold text-gold">
-                🍽 {meal.type}
+            <div key={i} className="rounded-md bg-gold-pale p-2.5 text-xs">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="font-bold text-gold">🍽 {meal.type}</span>
+                <a
+                  href={googleMapUrl(meal.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-info hover:underline"
+                >
+                  地圖 ↗
+                </a>
               </div>
-              <div className="space-y-2">
-                {meal.options.map((opt, j) => (
-                  <div
-                    key={j}
-                    className="rounded border border-line bg-card-pure p-2 text-xs"
-                  >
-                    {opt.headline && (
-                      <div className="text-[11px] font-semibold text-gold">
-                        {opt.headline}
-                      </div>
-                    )}
-                    <div className="mt-0.5 font-bold text-ink">{opt.name}</div>
-                    {opt.dishes && (
-                      <div className="mt-0.5 text-muted">{opt.dishes}</div>
-                    )}
-                    {opt.desc && (
-                      <div className="mt-0.5 text-[11px] text-muted">
-                        {opt.desc}
-                      </div>
-                    )}
-                    <div className="mt-1 flex items-center gap-2 text-[11px]">
-                      {opt.cost && (
-                        <span className="text-ink-2">{opt.cost}</span>
-                      )}
-                      {opt.mapQ && (
-                        <a
-                          href={googleMapUrl(opt.mapQ)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-auto font-semibold text-info hover:underline"
-                        >
-                          地圖 ↗
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="font-bold text-ink">{meal.name}</div>
+              {meal.dishes && (
+                <div className="mt-0.5 text-muted">{meal.dishes}</div>
+              )}
+              {meal.cost && (
+                <div className="mt-0.5 text-ink-2">{meal.cost}</div>
+              )}
             </div>
           ))}
         </div>

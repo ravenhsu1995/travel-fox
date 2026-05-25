@@ -6,16 +6,6 @@ export default function HotelCard({ hotel }: { hotel: HotelInfo }) {
     <section className="rounded-xl bg-card p-4 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-bold text-navy">🏨 住宿</h3>
-        {hotel.url && (
-          <a
-            href={hotel.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-semibold text-gold hover:underline"
-          >
-            訂房連結 ↗
-          </a>
-        )}
       </div>
       <div className="text-sm font-semibold text-ink">{hotel.name}</div>
       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">

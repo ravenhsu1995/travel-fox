@@ -8,7 +8,6 @@ import type {
   ExperienceItem,
   HotelInfo,
   MealBlock,
-  MealOption,
   TimelineItem,
   TransportOption,
   Trip,
@@ -55,7 +54,6 @@ export default function TripEditor({
         cover_emoji: trip.cover_emoji,
         start_date: trip.start_date,
         end_date: trip.end_date,
-        companions: trip.companions,
       });
       if (r.ok) {
         flash("ok", "行程資訊已儲存");
@@ -72,7 +70,6 @@ export default function TripEditor({
         trip_id: trip.id,
         theme: active.theme,
         hotel: active.hotel,
-        risks: active.risks,
         timeline: active.timeline,
       });
       if (r.ok) flash("ok", "此日已儲存");
@@ -189,7 +186,6 @@ function TripMetaForm({
   onSave: () => void;
   onDelete: () => void;
 }) {
-  const [companionInput, setCompanionInput] = useState("");
 
   return (
     <section className="space-y-4 px-4 py-5">
@@ -234,48 +230,6 @@ function TripMetaForm({
           />
         </Field>
       </div>
-
-      <Field label="同行者">
-        <div className="flex flex-wrap gap-1.5">
-          {trip.companions.map((c) => (
-            <span
-              key={c}
-              className="inline-flex items-center gap-1 rounded-full bg-gold-pale px-2.5 py-1 text-xs font-semibold text-gold"
-            >
-              {c}
-              <button
-                onClick={() =>
-                  setTrip({
-                    ...trip,
-                    companions: trip.companions.filter((x) => x !== c),
-                  })
-                }
-                className="text-gold/60 hover:text-gold"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-        <div className="mt-2 flex gap-2">
-          <input
-            value={companionInput}
-            onChange={(e) => setCompanionInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                const trimmed = companionInput.trim();
-                if (trimmed && !trip.companions.includes(trimmed)) {
-                  setTrip({ ...trip, companions: [...trip.companions, trimmed] });
-                }
-                setCompanionInput("");
-              }
-            }}
-            placeholder="輸入名字後按 Enter"
-            className="h-10 flex-1 rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
-          />
-        </div>
-      </Field>
 
       <div className="flex gap-2 pt-2">
         <button
@@ -328,11 +282,6 @@ function DayEditor({
       <HotelEditor
         hotel={day.hotel}
         onChange={(h) => onChange({ hotel: h })}
-      />
-
-      <RisksEditor
-        risks={day.risks}
-        onChange={(r) => onChange({ risks: r })}
       />
 
       <TimelineListEditor
@@ -414,62 +363,11 @@ function HotelEditor({
           value={hotel.mapQ ?? ""}
           onChange={(v) => onChange({ ...hotel, mapQ: v })}
         />
-        <TextInput
-          placeholder="訂房連結 URL"
-          value={hotel.url ?? ""}
-          onChange={(v) => onChange({ ...hotel, url: v })}
-        />
       </div>
     </Card>
   );
 }
 
-function RisksEditor({
-  risks,
-  onChange,
-}: {
-  risks: string[];
-  onChange: (r: string[]) => void;
-}) {
-  const [input, setInput] = useState("");
-  return (
-    <Card>
-      <h3 className="mb-2 text-sm font-bold text-warning">⚠️ 注意事項</h3>
-      <ul className="space-y-1.5">
-        {risks.map((r, i) => (
-          <li key={i} className="flex items-start gap-2 text-xs text-ink-2">
-            <span className="text-warning">•</span>
-            <span className="flex-1">{r}</span>
-            <button
-              onClick={() => onChange(risks.filter((_, j) => j !== i))}
-              className="text-muted hover:text-danger"
-            >
-              ×
-            </button>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-2 flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              const v = input.trim();
-              if (v) {
-                onChange([...risks, v]);
-                setInput("");
-              }
-            }
-          }}
-          placeholder="加入一條提醒（Enter 送出）"
-          className="h-9 flex-1 rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
-        />
-      </div>
-    </Card>
-  );
-}
 
 function TimelineListEditor({
   items,
@@ -579,10 +477,6 @@ function TimelineItemEditor({
         placeholder="地圖搜尋字串（mapQ，可空）"
         value={item.mapQ ?? ""}
         onChange={(v) => onChange({ mapQ: v || undefined })}
-      />
-      <CoordsInput
-        value={item.coords}
-        onChange={(c) => onChange({ coords: c })}
       />
 
       <TransportListEditor
@@ -703,7 +597,7 @@ function MealsListEditor({
   onChange: (m: MealBlock[]) => void;
 }) {
   function addBlock() {
-    onChange([...list, { type: "餐", options: [] }]);
+    onChange([...list, { type: "餐", name: "" }]);
   }
   function setBlock(i: number, b: MealBlock) {
     onChange(list.map((x, j) => (j === i ? b : x)));
@@ -713,115 +607,41 @@ function MealsListEditor({
   }
   return (
     <SubSection
-      title="🍽 餐廳區段"
+      title="🍽 餐廳"
       count={list.length}
       onAdd={addBlock}
-      addLabel="+ 加餐廳區段"
+      addLabel="+ 加餐廳"
     >
       {list.map((b, i) => (
         <div key={i} className="space-y-2 rounded-md bg-gold-pale p-2.5">
           <div className="flex gap-2">
             <TextInput
-              placeholder="區段類型（如：午餐 / 晚餐）"
+              placeholder="餐型（如：午餐 / 晚餐）"
               value={b.type}
               onChange={(v) => setBlock(i, { ...b, type: v })}
             />
-            <button
-              onClick={() => removeBlock(i)}
-              className="text-danger"
-            >
+            <button onClick={() => removeBlock(i)} className="text-danger">
               ×
             </button>
           </div>
-          <MealOptionsEditor
-            options={b.options}
-            onChange={(opts) => setBlock(i, { ...b, options: opts })}
+          <TextInput
+            placeholder="餐廳名稱"
+            value={b.name}
+            onChange={(v) => setBlock(i, { ...b, name: v })}
+          />
+          <TextInput
+            placeholder="吃了什麼（例：鐵板燒・里肌牛排）"
+            value={b.dishes ?? ""}
+            onChange={(v) => setBlock(i, { ...b, dishes: v || undefined })}
+          />
+          <TextInput
+            placeholder="費用備註"
+            value={b.cost ?? ""}
+            onChange={(v) => setBlock(i, { ...b, cost: v || undefined })}
           />
         </div>
       ))}
     </SubSection>
-  );
-}
-
-function MealOptionsEditor({
-  options,
-  onChange,
-}: {
-  options: MealOption[];
-  onChange: (o: MealOption[]) => void;
-}) {
-  function add() {
-    onChange([...options, { name: "" }]);
-  }
-  return (
-    <div className="space-y-1.5">
-      {options.map((opt, i) => (
-        <div key={i} className="space-y-1.5 rounded border border-line bg-card-pure p-2">
-          <div className="flex gap-2">
-            <TextInput
-              placeholder="店名"
-              value={opt.name}
-              onChange={(v) =>
-                onChange(options.map((x, j) => (j === i ? { ...x, name: v } : x)))
-              }
-            />
-            <button
-              onClick={() => onChange(options.filter((_, j) => j !== i))}
-              className="text-danger"
-            >
-              ×
-            </button>
-          </div>
-          <TextInput
-            placeholder="標語（例：神戶牛鐵板燒）"
-            value={opt.headline ?? ""}
-            onChange={(v) =>
-              onChange(
-                options.map((x, j) => (j === i ? { ...x, headline: v } : x)),
-              )
-            }
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <TextInput
-              placeholder="費用"
-              value={opt.cost ?? ""}
-              onChange={(v) =>
-                onChange(options.map((x, j) => (j === i ? { ...x, cost: v } : x)))
-              }
-            />
-            <TextInput
-              placeholder="招牌菜"
-              value={opt.dishes ?? ""}
-              onChange={(v) =>
-                onChange(
-                  options.map((x, j) => (j === i ? { ...x, dishes: v } : x)),
-                )
-              }
-            />
-          </div>
-          <TextInput
-            placeholder="描述"
-            value={opt.desc ?? ""}
-            onChange={(v) =>
-              onChange(options.map((x, j) => (j === i ? { ...x, desc: v } : x)))
-            }
-          />
-          <TextInput
-            placeholder="地圖搜尋字串"
-            value={opt.mapQ ?? ""}
-            onChange={(v) =>
-              onChange(options.map((x, j) => (j === i ? { ...x, mapQ: v } : x)))
-            }
-          />
-        </div>
-      ))}
-      <button
-        onClick={add}
-        className="w-full rounded border border-dashed border-line-2 py-1.5 text-xs font-semibold text-muted hover:border-gold hover:text-gold"
-      >
-        + 加餐廳選項
-      </button>
-    </div>
   );
 }
 
@@ -935,44 +755,6 @@ function TextInput({
   );
 }
 
-function CoordsInput({
-  value,
-  onChange,
-}: {
-  value?: [number, number];
-  onChange: (v: [number, number] | undefined) => void;
-}) {
-  const lat = value?.[0] ?? "";
-  const lng = value?.[1] ?? "";
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      <input
-        type="number"
-        step="0.0001"
-        value={lat}
-        onChange={(e) => {
-          const n = parseFloat(e.target.value);
-          if (Number.isNaN(n)) onChange(undefined);
-          else onChange([n, Number(lng) || 0]);
-        }}
-        placeholder="緯度"
-        className="h-9 w-full rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
-      />
-      <input
-        type="number"
-        step="0.0001"
-        value={lng}
-        onChange={(e) => {
-          const n = parseFloat(e.target.value);
-          if (Number.isNaN(n)) onChange(undefined);
-          else onChange([Number(lat) || 0, n]);
-        }}
-        placeholder="經度"
-        className="h-9 w-full rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
-      />
-    </div>
-  );
-}
 
 function SubSection({
   title,

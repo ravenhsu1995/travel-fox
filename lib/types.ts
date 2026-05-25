@@ -12,18 +12,11 @@ export type TransportOption = {
   recommended?: boolean;
 };
 
-export type MealOption = {
-  headline?: string;
-  name: string;
-  cost?: string;
-  dishes?: string;
-  desc?: string;
-  mapQ?: string;
-};
-
 export type MealBlock = {
   type: string;
-  options: MealOption[];
+  name: string;
+  dishes?: string;
+  cost?: string;
 };
 
 export type ExperienceItem = {
@@ -38,7 +31,6 @@ export type TimelineItem = {
   time: string;
   label: string;
   mapQ?: string;
-  coords?: [number, number];
   isHotelArrival?: boolean;
   transport?: TransportOption[];
   meals?: MealBlock[];
@@ -51,7 +43,6 @@ export type HotelInfo = {
   checkout?: string | null;
   cost?: string;
   mapQ?: string;
-  url?: string;
 };
 
 export type Trip = {
@@ -61,7 +52,6 @@ export type Trip = {
   subtitle: string | null;
   start_date: string;
   end_date: string;
-  companions: string[];
   cover_emoji: string;
   is_public_sample: boolean;
   created_at: string;
@@ -74,7 +64,6 @@ export type Day = {
   day_label: string | null;
   theme: string | null;
   hotel: HotelInfo | null;
-  risks: string[];
   timeline: TimelineItem[];
   sort_order: number;
 };

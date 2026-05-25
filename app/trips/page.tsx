@@ -69,9 +69,6 @@ export default async function TripsPage() {
                       {t.start_date} – {t.end_date}
                     </span>
                     <span>· {daysBetween(t.start_date, t.end_date)} 天</span>
-                    {t.companions.length > 0 && (
-                      <span>· {t.companions.length} 人同行</span>
-                    )}
                   </div>
                 </div>
                 <span className="text-muted">›</span>

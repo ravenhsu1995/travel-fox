@@ -32,12 +32,6 @@ export async function createTrip(formData: FormData): Promise<CreateTripResult> 
   const emoji = String(formData.get("cover_emoji") ?? "🗺️").trim() || "🗺️";
   const start = String(formData.get("start_date") ?? "");
   const end = String(formData.get("end_date") ?? "");
-  const companionsRaw = String(formData.get("companions") ?? "");
-  const companions = companionsRaw
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
-
   if (!title) return { ok: false, error: "請輸入行程標題" };
   if (!start || !end) return { ok: false, error: "請選擇起訖日期" };
   if (new Date(start) > new Date(end))
@@ -56,7 +50,6 @@ export async function createTrip(formData: FormData): Promise<CreateTripResult> 
       cover_emoji: emoji,
       start_date: start,
       end_date: end,
-      companions,
     })
     .select()
     .single();
@@ -72,7 +65,6 @@ export async function createTrip(formData: FormData): Promise<CreateTripResult> 
     day_label: dayLabel(date),
     sort_order: i,
     timeline: [],
-    risks: [],
   }));
 
   const { error: daysErr } = await supabase.from("days").insert(dayRows);
