@@ -272,12 +272,10 @@ function DayEditor({
       <Card>
         <div className="text-xs font-semibold text-muted">{day.day_label}</div>
         <div className="mt-2">
-          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted">城市</div>
-          <input
-            value={day.theme ?? ""}
-            onChange={(e) => onChange({ theme: e.target.value || null })}
-            placeholder="例：桃園 • 神戶"
-            className="w-full bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted-lt"
+          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">城市</div>
+          <CityChipsEditor
+            value={day.theme}
+            onChange={(v) => onChange({ theme: v })}
           />
         </div>
       </Card>
@@ -345,16 +343,22 @@ function HotelEditor({
           onChange={(v) => onChange({ ...hotel, name: v })}
         />
         <div className="grid grid-cols-2 gap-2">
-          <TextInput
-            placeholder="Check-in（如 16:00）"
-            value={hotel.checkin ?? ""}
-            onChange={(v) => onChange({ ...hotel, checkin: v || null })}
-          />
-          <TextInput
-            placeholder="Check-out"
-            value={hotel.checkout ?? ""}
-            onChange={(v) => onChange({ ...hotel, checkout: v || null })}
-          />
+          <div>
+            <div className="mb-1 text-[10px] font-semibold text-muted">Check-in</div>
+            <TimePicker
+              value={hotel.checkin ?? null}
+              onChange={(v) => onChange({ ...hotel, checkin: v })}
+              allowEmpty
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-[10px] font-semibold text-muted">Check-out</div>
+            <TimePicker
+              value={hotel.checkout ?? null}
+              onChange={(v) => onChange({ ...hotel, checkout: v })}
+              allowEmpty
+            />
+          </div>
         </div>
         <TextInput
           placeholder="費用備註"
@@ -461,11 +465,9 @@ function TimelineItemEditor({
   return (
     <Card>
       <div className="mb-3 flex items-center gap-2">
-        <input
+        <TimePicker
           value={item.time}
-          onChange={(e) => onChange({ time: e.target.value })}
-          placeholder="時間"
-          className="h-8 w-20 rounded bg-gold px-2 text-xs font-bold text-white outline-none"
+          onChange={(v) => onChange({ time: v ?? "09:00" })}
         />
         <span
           className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.badgeCls}`}
@@ -523,10 +525,11 @@ function TransportEditor({
 }) {
   return (
     <div className="space-y-2 rounded-md border border-success/40 bg-success/5 p-2.5">
-      <TextInput
-        placeholder="工具（例：飛機 / JR / 巴士 / 自駕）"
+      <SelectOrCustom
         value={value.tool}
+        options={TRANSPORT_TOOL_PRESETS}
         onChange={(v) => onChange({ ...value, tool: v })}
+        placeholder="選擇交通工具"
       />
       <div className="grid grid-cols-2 gap-2">
         <TextInput
@@ -568,10 +571,11 @@ function MealEditor({
 }) {
   return (
     <div className="space-y-2 rounded-md bg-gold-pale p-2.5">
-      <TextInput
-        placeholder="餐型（例：早餐 / 午餐 / 下午茶 / 晚餐）"
+      <SelectOrCustom
         value={value.type}
+        options={MEAL_TYPE_PRESETS}
         onChange={(v) => onChange({ ...value, type: v })}
+        placeholder="選擇餐型"
       />
       <TextInput
         placeholder="餐廳名稱"
@@ -667,3 +671,188 @@ function TextInput({
   );
 }
 
+
+const MEAL_TYPE_PRESETS = ["早餐", "午餐", "下午茶", "晚餐", "點心", "飲料", "路邊小攤", "宵夜"];
+const TRANSPORT_TOOL_PRESETS = ["飛機", "鐵道", "巴士", "自駕", "船", "步行"];
+
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = ["00", "30"];
+
+function TimePicker({
+  value,
+  onChange,
+  allowEmpty = false,
+}: {
+  value: string | null;
+  onChange: (v: string | null) => void;
+  allowEmpty?: boolean;
+}) {
+  const [h, m] = value ? value.split(":") : ["", ""];
+  function set(nextH: string, nextM: string) {
+    if (!nextH && !nextM) {
+      onChange(null);
+      return;
+    }
+    onChange(`${nextH || "00"}:${nextM || "00"}`);
+  }
+  const selectCls =
+    "h-9 rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold";
+  return (
+    <div className="flex items-center gap-1">
+      <select
+        value={h}
+        onChange={(e) => set(e.target.value, m || "00")}
+        className={selectCls}
+      >
+        {allowEmpty && <option value="">時</option>}
+        {HOURS.map((x) => (
+          <option key={x} value={x}>
+            {x}
+          </option>
+        ))}
+      </select>
+      <span className="text-muted">:</span>
+      <select
+        value={m}
+        onChange={(e) => set(h || "00", e.target.value)}
+        className={selectCls}
+      >
+        {allowEmpty && <option value="">分</option>}
+        {MINUTES.map((x) => (
+          <option key={x} value={x}>
+            {x}
+          </option>
+        ))}
+      </select>
+      {allowEmpty && value && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="ml-1 text-xs text-muted hover:text-danger"
+        >
+          清除
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CityChipsEditor({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (v: string | null) => void;
+}) {
+  const cities = value
+    ? value.split("•").map((s) => s.trim()).filter(Boolean)
+    : [];
+  const [draft, setDraft] = useState("");
+  function commit(next: string[]) {
+    onChange(next.length === 0 ? null : next.join(" • "));
+  }
+  function add() {
+    const v = draft.trim();
+    if (!v) return;
+    commit([...cities, v]);
+    setDraft("");
+  }
+  function remove(i: number) {
+    commit(cities.filter((_, j) => j !== i));
+  }
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        {cities.map((c, i) => (
+          <span
+            key={i}
+            className="inline-flex items-center gap-1 rounded-full bg-gold-pale px-2.5 py-0.5 text-xs font-semibold text-ink"
+          >
+            {c}
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="text-muted hover:text-danger"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
+          placeholder="輸入城市名後按 +"
+          className="h-9 flex-1 rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
+        />
+        <button
+          type="button"
+          onClick={add}
+          disabled={!draft.trim()}
+          className="h-9 rounded-md bg-navy px-4 text-xs font-semibold text-white hover:bg-navy-lt disabled:opacity-40"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SelectOrCustom({
+  value,
+  options,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  const isCustom = value !== "" && !options.includes(value);
+  const [customMode, setCustomMode] = useState(isCustom);
+  const showingCustom = customMode || isCustom;
+
+  function onSelect(v: string) {
+    if (v === "__other__") {
+      setCustomMode(true);
+      onChange("");
+    } else {
+      setCustomMode(false);
+      onChange(v);
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <select
+        value={showingCustom ? "__other__" : value}
+        onChange={(e) => onSelect(e.target.value)}
+        className="h-9 w-full rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+        <option value="__other__">其他…</option>
+      </select>
+      {showingCustom && (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="自訂"
+          className="h-9 w-full rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
+        />
+      )}
+    </div>
+  );
+}
