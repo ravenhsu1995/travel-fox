@@ -3,13 +3,10 @@ export type Currency = "JPY" | "NTD" | "KRW" | "VND" | "USD" | "TWD" | "EUR";
 export type TransportOption = {
   tool: string;
   from: string;
-  fromQ?: string;
   to: string;
-  toQ?: string;
   duration?: string;
   cost?: string;
   note?: string;
-  recommended?: boolean;
 };
 
 export type MealBlock = {
@@ -24,17 +21,16 @@ export type ExperienceItem = {
   spot: string;
   cost?: string;
   desc?: string;
-  mapQ?: string;
 };
+
+export type TimelineType = "transport" | "meal" | "exp";
 
 export type TimelineItem = {
   time: string;
-  label: string;
-  mapQ?: string;
-  isHotelArrival?: boolean;
-  transport?: TransportOption[];
-  meals?: MealBlock[];
-  exps?: ExperienceItem[];
+  type: TimelineType;
+  transport?: TransportOption;
+  meal?: MealBlock;
+  exp?: ExperienceItem;
 };
 
 export type HotelInfo = {

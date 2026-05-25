@@ -371,6 +371,22 @@ function HotelEditor({
   );
 }
 
+const TYPE_META: Record<
+  TimelineItem["type"],
+  { label: string; icon: string; badgeCls: string }
+> = {
+  transport: { label: "交通", icon: "🚆", badgeCls: "bg-success/15 text-success" },
+  meal: { label: "餐飲", icon: "🍽", badgeCls: "bg-gold/15 text-gold" },
+  exp: { label: "體驗", icon: "✨", badgeCls: "bg-info/15 text-info" },
+};
+
+function emptyByType(type: TimelineItem["type"]): TimelineItem {
+  if (type === "transport")
+    return { time: "09:00", type, transport: { tool: "", from: "", to: "" } };
+  if (type === "meal")
+    return { time: "09:00", type, meal: { type: "午餐", name: "" } };
+  return { time: "09:00", type, exp: { spot: "" } };
+}
 
 function TimelineListEditor({
   items,
@@ -379,11 +395,8 @@ function TimelineListEditor({
   items: TimelineItem[];
   onChange: (t: TimelineItem[]) => void;
 }) {
-  function addItem() {
-    onChange([
-      ...items,
-      { time: "09:00", label: "新時段", transport: [], meals: [], exps: [] },
-    ]);
+  function addItem(type: TimelineItem["type"]) {
+    onChange([...items, emptyByType(type)]);
   }
   function setItem(i: number, patch: Partial<TimelineItem>) {
     onChange(items.map((it, j) => (i === j ? { ...it, ...patch } : it)));
@@ -400,18 +413,21 @@ function TimelineListEditor({
   }
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-navy">⏱ 時間軸</h3>
-        <button
-          onClick={addItem}
-          className="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-white hover:bg-gold-lt"
-        >
-          + 新增時段
-        </button>
+      <h3 className="text-sm font-bold text-navy">⏱ 時間軸</h3>
+      <div className="flex gap-2">
+        {(["transport", "meal", "exp"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => addItem(t)}
+            className={`flex-1 rounded-full px-3 py-1.5 text-xs font-semibold transition ${TYPE_META[t].badgeCls} hover:opacity-80`}
+          >
+            + {TYPE_META[t].icon} {TYPE_META[t].label}
+          </button>
+        ))}
       </div>
       {items.length === 0 && (
         <div className="rounded-lg border border-dashed border-line-2 bg-card-pure p-5 text-center text-xs text-muted">
-          這一天還沒有時間安排，點上方「新增時段」開始
+          這一天還沒有時間安排，點上方按鈕新增交通／餐飲／體驗
         </div>
       )}
       {items.map((it, i) => (
@@ -441,22 +457,22 @@ function TimelineItemEditor({
   onMoveUp?: () => void;
   onMoveDown?: () => void;
 }) {
+  const meta = TYPE_META[item.type];
   return (
     <Card>
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-2">
         <input
           value={item.time}
           onChange={(e) => onChange({ time: e.target.value })}
           placeholder="時間"
           className="h-8 w-20 rounded bg-gold px-2 text-xs font-bold text-white outline-none"
         />
-        <input
-          value={item.label}
-          onChange={(e) => onChange({ label: e.target.value })}
-          placeholder="標題"
-          className="h-8 flex-1 rounded border border-line-2 bg-card-pure px-2 text-sm font-bold text-navy outline-none focus:border-gold"
-        />
-        <div className="flex gap-1 text-xs text-muted">
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.badgeCls}`}
+        >
+          {meta.icon} {meta.label}
+        </span>
+        <div className="ml-auto flex gap-1 text-xs text-muted">
           {onMoveUp && (
             <button onClick={onMoveUp} className="rounded px-1 hover:bg-bg-2">
               ↑
@@ -476,243 +492,136 @@ function TimelineItemEditor({
         </div>
       </div>
 
-      <TextInput
-        placeholder="地圖搜尋字串（mapQ，可空）"
-        value={item.mapQ ?? ""}
-        onChange={(v) => onChange({ mapQ: v || undefined })}
-      />
-
-      <TransportListEditor
-        list={item.transport ?? []}
-        onChange={(t) => onChange({ transport: t })}
-      />
-      <MealsListEditor
-        list={item.meals ?? []}
-        onChange={(m) => onChange({ meals: m })}
-      />
-      <ExpsListEditor
-        list={item.exps ?? []}
-        onChange={(e) => onChange({ exps: e })}
-      />
+      {item.type === "transport" && (
+        <TransportEditor
+          value={item.transport ?? { tool: "", from: "", to: "" }}
+          onChange={(t) => onChange({ transport: t })}
+        />
+      )}
+      {item.type === "meal" && (
+        <MealEditor
+          value={item.meal ?? { type: "午餐", name: "" }}
+          onChange={(m) => onChange({ meal: m })}
+        />
+      )}
+      {item.type === "exp" && (
+        <ExpEditor
+          value={item.exp ?? { spot: "" }}
+          onChange={(e) => onChange({ exp: e })}
+        />
+      )}
     </Card>
   );
 }
 
-function TransportListEditor({
-  list,
+function TransportEditor({
+  value,
   onChange,
 }: {
-  list: TransportOption[];
-  onChange: (t: TransportOption[]) => void;
+  value: TransportOption;
+  onChange: (t: TransportOption) => void;
 }) {
-  function add() {
-    onChange([
-      ...list,
-      { tool: "", from: "", to: "", duration: "", cost: "", note: "" },
-    ]);
-  }
   return (
-    <SubSection
-      title="🚆 交通選項"
-      count={list.length}
-      onAdd={add}
-      addLabel="+ 加交通"
-    >
-      {list.map((t, i) => (
-        <div key={i} className="space-y-1.5 rounded-md border border-line bg-card-pure p-2.5">
-          <div className="flex gap-2">
-            <TextInput
-              placeholder="工具（如：飛機/JR/巴士）"
-              value={t.tool}
-              onChange={(v) => onChange(list.map((x, j) => (j === i ? { ...x, tool: v } : x)))}
-            />
-            <button
-              onClick={() => onChange(list.filter((_, j) => j !== i))}
-              className="text-danger"
-            >
-              ×
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <TextInput
-              placeholder="from"
-              value={t.from}
-              onChange={(v) =>
-                onChange(list.map((x, j) => (j === i ? { ...x, from: v } : x)))
-              }
-            />
-            <TextInput
-              placeholder="to"
-              value={t.to}
-              onChange={(v) =>
-                onChange(list.map((x, j) => (j === i ? { ...x, to: v } : x)))
-              }
-            />
-            <TextInput
-              placeholder="耗時"
-              value={t.duration ?? ""}
-              onChange={(v) =>
-                onChange(
-                  list.map((x, j) => (j === i ? { ...x, duration: v } : x)),
-                )
-              }
-            />
-            <TextInput
-              placeholder="費用"
-              value={t.cost ?? ""}
-              onChange={(v) =>
-                onChange(list.map((x, j) => (j === i ? { ...x, cost: v } : x)))
-              }
-            />
-          </div>
-          <TextInput
-            placeholder="備註"
-            value={t.note ?? ""}
-            onChange={(v) =>
-              onChange(list.map((x, j) => (j === i ? { ...x, note: v } : x)))
-            }
-          />
-          <label className="flex items-center gap-2 text-xs text-muted">
-            <input
-              type="checkbox"
-              checked={!!t.recommended}
-              onChange={(e) =>
-                onChange(
-                  list.map((x, j) =>
-                    j === i ? { ...x, recommended: e.target.checked } : x,
-                  ),
-                )
-              }
-            />
-            標為推薦
-          </label>
-        </div>
-      ))}
-    </SubSection>
+    <div className="space-y-2 rounded-md border border-success/40 bg-success/5 p-2.5">
+      <TextInput
+        placeholder="工具（例：飛機 / JR / 巴士 / 自駕）"
+        value={value.tool}
+        onChange={(v) => onChange({ ...value, tool: v })}
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <TextInput
+          placeholder="從"
+          value={value.from}
+          onChange={(v) => onChange({ ...value, from: v })}
+        />
+        <TextInput
+          placeholder="到"
+          value={value.to}
+          onChange={(v) => onChange({ ...value, to: v })}
+        />
+        <TextInput
+          placeholder="耗時（例：2h10m / 35min）"
+          value={value.duration ?? ""}
+          onChange={(v) => onChange({ ...value, duration: v || undefined })}
+        />
+        <TextInput
+          placeholder="費用"
+          value={value.cost ?? ""}
+          onChange={(v) => onChange({ ...value, cost: v || undefined })}
+        />
+      </div>
+      <TextInput
+        placeholder="備註（服務／路線名稱）"
+        value={value.note ?? ""}
+        onChange={(v) => onChange({ ...value, note: v || undefined })}
+      />
+    </div>
   );
 }
 
-function MealsListEditor({
-  list,
+function MealEditor({
+  value,
   onChange,
 }: {
-  list: MealBlock[];
-  onChange: (m: MealBlock[]) => void;
+  value: MealBlock;
+  onChange: (m: MealBlock) => void;
 }) {
-  function addBlock() {
-    onChange([...list, { type: "餐", name: "" }]);
-  }
-  function setBlock(i: number, b: MealBlock) {
-    onChange(list.map((x, j) => (j === i ? b : x)));
-  }
-  function removeBlock(i: number) {
-    onChange(list.filter((_, j) => j !== i));
-  }
   return (
-    <SubSection
-      title="🍽 餐廳"
-      count={list.length}
-      onAdd={addBlock}
-      addLabel="+ 加餐廳"
-    >
-      {list.map((b, i) => (
-        <div key={i} className="space-y-2 rounded-md bg-gold-pale p-2.5">
-          <div className="flex gap-2">
-            <TextInput
-              placeholder="餐型（如：午餐 / 晚餐）"
-              value={b.type}
-              onChange={(v) => setBlock(i, { ...b, type: v })}
-            />
-            <button onClick={() => removeBlock(i)} className="text-danger">
-              ×
-            </button>
-          </div>
-          <TextInput
-            placeholder="餐廳名稱"
-            value={b.name}
-            onChange={(v) => setBlock(i, { ...b, name: v })}
-          />
-          <TextInput
-            placeholder="吃了什麼（例：鐵板燒・里肌牛排）"
-            value={b.dishes ?? ""}
-            onChange={(v) => setBlock(i, { ...b, dishes: v || undefined })}
-          />
-          <TextInput
-            placeholder="費用備註"
-            value={b.cost ?? ""}
-            onChange={(v) => setBlock(i, { ...b, cost: v || undefined })}
-          />
-        </div>
-      ))}
-    </SubSection>
+    <div className="space-y-2 rounded-md bg-gold-pale p-2.5">
+      <TextInput
+        placeholder="餐型（例：早餐 / 午餐 / 下午茶 / 晚餐）"
+        value={value.type}
+        onChange={(v) => onChange({ ...value, type: v })}
+      />
+      <TextInput
+        placeholder="餐廳名稱"
+        value={value.name}
+        onChange={(v) => onChange({ ...value, name: v })}
+      />
+      <TextInput
+        placeholder="吃了什麼"
+        value={value.dishes ?? ""}
+        onChange={(v) => onChange({ ...value, dishes: v || undefined })}
+      />
+      <TextInput
+        placeholder="費用"
+        value={value.cost ?? ""}
+        onChange={(v) => onChange({ ...value, cost: v || undefined })}
+      />
+    </div>
   );
 }
 
-function ExpsListEditor({
-  list,
+function ExpEditor({
+  value,
   onChange,
 }: {
-  list: ExperienceItem[];
-  onChange: (e: ExperienceItem[]) => void;
+  value: ExperienceItem;
+  onChange: (e: ExperienceItem) => void;
 }) {
-  function add() {
-    onChange([...list, { spot: "" }]);
-  }
   return (
-    <SubSection
-      title="✨ 體驗"
-      count={list.length}
-      onAdd={add}
-      addLabel="+ 加體驗"
-    >
-      {list.map((e, i) => (
-        <div key={i} className="space-y-1.5 rounded-md border border-line bg-card-pure p-2.5">
-          <div className="flex gap-2">
-            <TextInput
-              placeholder="景點/體驗名稱"
-              value={e.spot}
-              onChange={(v) =>
-                onChange(list.map((x, j) => (j === i ? { ...x, spot: v } : x)))
-              }
-            />
-            <button
-              onClick={() => onChange(list.filter((_, j) => j !== i))}
-              className="text-danger"
-            >
-              ×
-            </button>
-          </div>
-          <TextInput
-            placeholder="標語"
-            value={e.headline ?? ""}
-            onChange={(v) =>
-              onChange(list.map((x, j) => (j === i ? { ...x, headline: v } : x)))
-            }
-          />
-          <TextInput
-            placeholder="費用"
-            value={e.cost ?? ""}
-            onChange={(v) =>
-              onChange(list.map((x, j) => (j === i ? { ...x, cost: v } : x)))
-            }
-          />
-          <TextInput
-            placeholder="描述"
-            value={e.desc ?? ""}
-            onChange={(v) =>
-              onChange(list.map((x, j) => (j === i ? { ...x, desc: v } : x)))
-            }
-          />
-          <TextInput
-            placeholder="地圖搜尋字串"
-            value={e.mapQ ?? ""}
-            onChange={(v) =>
-              onChange(list.map((x, j) => (j === i ? { ...x, mapQ: v } : x)))
-            }
-          />
-        </div>
-      ))}
-    </SubSection>
+    <div className="space-y-2 rounded-md border border-line bg-card-pure p-2.5">
+      <TextInput
+        placeholder="景點/體驗名稱"
+        value={value.spot}
+        onChange={(v) => onChange({ ...value, spot: v })}
+      />
+      <TextInput
+        placeholder="標語"
+        value={value.headline ?? ""}
+        onChange={(v) => onChange({ ...value, headline: v || undefined })}
+      />
+      <TextInput
+        placeholder="描述"
+        value={value.desc ?? ""}
+        onChange={(v) => onChange({ ...value, desc: v || undefined })}
+      />
+      <TextInput
+        placeholder="費用"
+        value={value.cost ?? ""}
+        onChange={(v) => onChange({ ...value, cost: v || undefined })}
+      />
+    </div>
   );
 }
 
@@ -758,39 +667,3 @@ function TextInput({
   );
 }
 
-
-function SubSection({
-  title,
-  count,
-  onAdd,
-  addLabel,
-  children,
-}: {
-  title: string;
-  count: number;
-  onAdd: () => void;
-  addLabel: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <details className="mt-3 rounded-md bg-bg-2 p-2.5" open={count > 0}>
-      <summary className="flex cursor-pointer items-center justify-between text-xs font-bold text-ink-2">
-        <span>
-          {title}{" "}
-          <span className="font-normal text-muted">({count})</span>
-        </span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            onAdd();
-          }}
-          className="rounded bg-navy px-2 py-0.5 text-[10px] font-semibold text-white"
-        >
-          {addLabel}
-        </button>
-      </summary>
-      <div className="mt-2 space-y-2">{children}</div>
-    </details>
-  );
-}
