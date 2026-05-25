@@ -542,18 +542,20 @@ function TransportEditor({
           value={value.to}
           onChange={(v) => onChange({ ...value, to: v })}
         />
-        <TextInput
-          placeholder="耗時（例：2h10m / 35min）"
-          value={value.duration ?? ""}
-          onChange={(v) => onChange({ ...value, duration: v || undefined })}
-        />
+        <div>
+          <div className="mb-1 text-[10px] font-semibold text-muted">耗時</div>
+          <DurationPicker
+            value={value.duration}
+            onChange={(v) => onChange({ ...value, duration: v })}
+          />
+        </div>
         <TextInput
           placeholder="費用"
           value={value.cost ?? ""}
           onChange={(v) => onChange({ ...value, cost: v || undefined })}
         />
       </div>
-      <TextInput
+      <TextArea
         placeholder="備註（服務／路線名稱）"
         value={value.note ?? ""}
         onChange={(v) => onChange({ ...value, note: v || undefined })}
@@ -582,7 +584,7 @@ function MealEditor({
         value={value.name}
         onChange={(v) => onChange({ ...value, name: v })}
       />
-      <TextInput
+      <TextArea
         placeholder="吃了什麼"
         value={value.dishes ?? ""}
         onChange={(v) => onChange({ ...value, dishes: v || undefined })}
@@ -615,7 +617,7 @@ function ExpEditor({
         value={value.headline ?? ""}
         onChange={(v) => onChange({ ...value, headline: v || undefined })}
       />
-      <TextInput
+      <TextArea
         placeholder="描述"
         value={value.desc ?? ""}
         onChange={(v) => onChange({ ...value, desc: v || undefined })}
@@ -854,5 +856,82 @@ function SelectOrCustom({
         />
       )}
     </div>
+  );
+}
+
+function parseDuration(s: string | undefined): { h: number; m: number } {
+  if (!s) return { h: 0, m: 0 };
+  const hm = s.match(/^(\d+)h(\d+)m$/i);
+  if (hm) return { h: +hm[1], m: +hm[2] };
+  const hOnly = s.match(/^(\d+)h$/i);
+  if (hOnly) return { h: +hOnly[1], m: 0 };
+  const mOnly = s.match(/^(\d+)(?:min|m)$/i);
+  if (mOnly) return { h: 0, m: +mOnly[1] };
+  const bare = s.match(/^(\d+)$/);
+  if (bare) return { h: 0, m: +bare[1] };
+  return { h: 0, m: 0 };
+}
+function formatDuration(h: number, m: number): string | undefined {
+  if (!h && !m) return undefined;
+  if (!h) return `${m}min`;
+  if (!m) return `${h}h`;
+  return `${h}h${m}m`;
+}
+
+function DurationPicker({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (v: string | undefined) => void;
+}) {
+  const { h, m } = parseDuration(value);
+  const numCls =
+    "h-9 w-16 rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold";
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type="number"
+        min={0}
+        max={48}
+        value={h || ""}
+        onChange={(e) => onChange(formatDuration(+e.target.value || 0, m))}
+        placeholder="0"
+        className={numCls}
+      />
+      <span className="text-xs text-muted">h</span>
+      <input
+        type="number"
+        min={0}
+        max={59}
+        value={m || ""}
+        onChange={(e) => onChange(formatDuration(h, +e.target.value || 0))}
+        placeholder="0"
+        className={numCls}
+      />
+      <span className="text-xs text-muted">min</span>
+    </div>
+  );
+}
+
+function TextArea({
+  value,
+  onChange,
+  placeholder,
+  rows = 2,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full rounded-md border border-line-2 bg-card-pure px-2 py-1.5 text-xs outline-none focus:border-gold resize-y"
+    />
   );
 }

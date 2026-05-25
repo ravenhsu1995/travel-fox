@@ -27,7 +27,7 @@ const days = [
   {
     date: "2026-05-02", day_label: "5/2 (\u516d)", theme: "\u6843\u5712 \u2022 \u795e\u6236", sort_order: 0,
     hotel: {"name": "Hostel Anchorage 神戸", "checkin": "16:00", "checkout": null, "mapQ": "Hostel Anchorage 神戸 元町"},
-    timeline: [{"time":"09:30","type":"transport","transport":{"tool":"飛機","from":"桃園機場 T1","to":"關西機場 T2","duration":"2h50m","note":"樂桃航空 MM24"}},{"time":"13:20","type":"transport","transport":{"tool":"高速船","from":"關西機場","to":"神戶機場","duration":"45–50min","note":"Bay Shuttle"}},{"time":"14:30","type":"meal","meal":{"type":"午餐","name":"とんかつ七兵衛 三宮店","dishes":"豬排飯"}},{"time":"20:00","type":"exp","exp":{"headline":"神戶港塔夜景・海濱漫步","spot":"神戶港塔・美利堅公園","desc":"翻修重開的神戶地標，夜間燈光絕美，美利堅公園海濱散步無需門票"}},{"time":"21:00","type":"meal","meal":{"type":"晚餐","name":"鶏soba座銀 神戸本店","dishes":"雞白湯/飛魚湯拉麵"}}],
+    timeline: [{"time":"09:30","type":"transport","transport":{"tool":"飛機","from":"桃園機場 T1","to":"關西機場 T2","duration":"2h50m","note":"樂桃航空 MM24"}},{"time":"13:20","type":"transport","transport":{"tool":"高速船","from":"關西機場","to":"神戶機場","duration":"50min","note":"Bay Shuttle"}},{"time":"14:30","type":"meal","meal":{"type":"午餐","name":"とんかつ七兵衛 三宮店","dishes":"豬排飯"}},{"time":"20:00","type":"exp","exp":{"headline":"神戶港塔夜景・海濱漫步","spot":"神戶港塔・美利堅公園","desc":"翻修重開的神戶地標，夜間燈光絕美，美利堅公園海濱散步無需門票"}},{"time":"21:00","type":"meal","meal":{"type":"晚餐","name":"鶏soba座銀 神戸本店","dishes":"雞白湯/飛魚湯拉麵"}}],
   },
   {
     date: "2026-05-03", day_label: "5/3 (\u65e5)", theme: "\u795e\u6236 \u2022 \u660e\u77f3", sort_order: 1,
