@@ -678,7 +678,7 @@ const MEAL_TYPE_PRESETS = ["早餐", "午餐", "下午茶", "晚餐", "點心", 
 const TRANSPORT_TOOL_PRESETS = ["飛機", "鐵道", "巴士", "自駕", "船", "步行"];
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-const MINUTES = ["00", "30"];
+const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
 
 function TimePicker({
   value,

@@ -22,7 +22,7 @@ insert into days (trip_id, date, day_label, theme, hotel, timeline, sort_order) 
   '5/2 (六)',
   '桃園 • 神戶',
   '{"name": "Hostel Anchorage 神戸", "checkin": "16:00", "checkout": null, "mapQ": "Hostel Anchorage 神戸 元町"}'::jsonb,
-  '[{"time": "09:30", "type": "transport", "transport": {"tool": "飛機", "from": "桃園機場 T1", "to": "關西機場 T2", "duration": "2h50m", "note": "樂桃航空 MM24"}}, {"time": "13:30", "type": "transport", "transport": {"tool": "高速船", "from": "關西機場", "to": "神戶機場", "duration": "50min", "note": "Bay Shuttle"}}, {"time": "14:30", "type": "meal", "meal": {"type": "午餐", "name": "とんかつ七兵衛 三宮店", "dishes": "豬排飯"}}, {"time": "20:00", "type": "exp", "exp": {"headline": "神戶港塔夜景・海濱漫步", "spot": "神戶港塔・美利堅公園", "desc": "翻修重開的神戶地標，夜間燈光絕美，美利堅公園海濱散步無需門票"}}, {"time": "21:00", "type": "meal", "meal": {"type": "晚餐", "name": "鶏soba座銀 神戸本店", "dishes": "雞白湯/飛魚湯拉麵"}}]'::jsonb,
+  '[{"time": "09:30", "type": "transport", "transport": {"tool": "飛機", "from": "桃園機場 T1", "to": "關西機場 T2", "duration": "2h50m", "note": "樂桃航空 MM24"}}, {"time": "13:20", "type": "transport", "transport": {"tool": "高速船", "from": "關西機場", "to": "神戶機場", "duration": "50min", "note": "Bay Shuttle"}}, {"time": "14:30", "type": "meal", "meal": {"type": "午餐", "name": "とんかつ七兵衛 三宮店", "dishes": "豬排飯"}}, {"time": "20:00", "type": "exp", "exp": {"headline": "神戶港塔夜景・海濱漫步", "spot": "神戶港塔・美利堅公園", "desc": "翻修重開的神戶地標，夜間燈光絕美，美利堅公園海濱散步無需門票"}}, {"time": "21:00", "type": "meal", "meal": {"type": "晚餐", "name": "鶏soba座銀 神戸本店", "dishes": "雞白湯/飛魚湯拉麵"}}]'::jsonb,
   0
 );
 
@@ -32,7 +32,7 @@ insert into days (trip_id, date, day_label, theme, hotel, timeline, sort_order) 
   '5/3 (日)',
   '神戶 • 明石',
   '{"name": "Hostel Anchorage 神戸", "checkin": null, "checkout": null, "mapQ": "Hostel Anchorage 神戸 元町"}'::jsonb,
-  '[{"time": "09:30", "type": "transport", "transport": {"tool": "JR", "from": "三宮", "to": "明石", "duration": "35min", "note": "JR 神戶線"}}, {"time": "10:00", "type": "exp", "exp": {"headline": "熱鬧在地海鮮廚房", "spot": "魚之棚邊走邊吃", "desc": "魚之棚邊走邊吃：在地海鮮廚房採買"}}, {"time": "10:30", "type": "meal", "meal": {"type": "早餐", "name": "明石玉子焼 中々", "dishes": "明石燒"}}, {"time": "11:30", "type": "exp", "exp": {"headline": "高空透明海上漫步", "spot": "明石海峽大橋", "desc": "明石海峽大橋散步道：海上透明步道"}}, {"time": "12:30", "type": "meal", "meal": {"type": "午餐", "name": "こじゃんと2号店", "dishes": "土佐丼"}}, {"time": "14:30", "type": "exp", "exp": {"headline": "昭和風立飲居酒屋體驗", "spot": "三宮高架下酒場街", "desc": "融入在地夜晚文化，昭和風情高架下小店，氣氛獨特"}}, {"time": "15:30", "type": "meal", "meal": {"type": "點心", "name": "食ぱんの店 春夏+秋冬 三宮センタープラザ店", "dishes": "生甜甜圈＆吐司"}}, {"time": "20:00", "type": "meal", "meal": {"type": "晚餐", "name": "土佐清水ワールド 三宮生けすセンター", "dishes": "居酒屋"}}]'::jsonb,
+  '[{"time": "09:15", "type": "transport", "transport": {"tool": "JR", "from": "三宮", "to": "明石", "duration": "35min", "note": "JR 神戶線"}}, {"time": "10:00", "type": "exp", "exp": {"headline": "熱鬧在地海鮮廚房", "spot": "魚之棚邊走邊吃", "desc": "魚之棚邊走邊吃：在地海鮮廚房採買"}}, {"time": "10:30", "type": "meal", "meal": {"type": "早餐", "name": "明石玉子焼 中々", "dishes": "明石燒"}}, {"time": "11:30", "type": "exp", "exp": {"headline": "高空透明海上漫步", "spot": "明石海峽大橋", "desc": "明石海峽大橋散步道：海上透明步道"}}, {"time": "12:30", "type": "meal", "meal": {"type": "午餐", "name": "こじゃんと2号店", "dishes": "土佐丼"}}, {"time": "14:30", "type": "exp", "exp": {"headline": "昭和風立飲居酒屋體驗", "spot": "三宮高架下酒場街", "desc": "融入在地夜晚文化，昭和風情高架下小店，氣氛獨特"}}, {"time": "15:30", "type": "meal", "meal": {"type": "點心", "name": "食ぱんの店 春夏+秋冬 三宮センタープラザ店", "dishes": "生甜甜圈＆吐司"}}, {"time": "20:00", "type": "meal", "meal": {"type": "晚餐", "name": "土佐清水ワールド 三宮生けすセンター", "dishes": "居酒屋"}}]'::jsonb,
   1
 );
 
@@ -82,7 +82,7 @@ insert into days (trip_id, date, day_label, theme, hotel, timeline, sort_order) 
   '5/8 (五)',
   '岡山 • 倉敷',
   '{"name": "Via Inn 岡山駅前", "checkin": null, "checkout": null, "mapQ": "ヴィアイン岡山駅前"}'::jsonb,
-  '[{"time": "11:00", "type": "transport", "transport": {"tool": "JR", "from": "岡山", "to": "倉敷", "duration": "15min", "note": "山陽本線"}}, {"time": "12:30", "type": "meal", "meal": {"type": "午餐", "name": "倉敷うどん ぶっかけ ふるいち 仲店", "dishes": "烏龍麵"}}, {"time": "14:00", "type": "exp", "exp": {"headline": "倉敷守護神・阿智神社巡禮", "spot": "阿智神社", "desc": "鎮座倉敷美觀地區高台的古社，俯瞰白壁水鄉，氣氛靜謐"}}, {"time": "15:00", "type": "exp", "exp": {"headline": "倉敷文青巷弄尋寶", "spot": "倉敷美觀地區", "desc": "白壁老街與運河沿岸漫步，巷弄裡藏著質感小店與藝廊"}}, {"time": "16:30", "type": "transport", "transport": {"tool": "JR", "from": "倉敷", "to": "岡山", "duration": "15min", "note": "山陽本線"}}, {"time": "17:30", "type": "exp", "exp": {"headline": "日本三大名園靜謐遊", "spot": "後樂園與岡山城", "desc": "後樂園與岡山城：日本三大名園散策，入園至18:00"}}, {"time": "19:00", "type": "meal", "meal": {"type": "晚餐", "name": "和麺ぐり虎 Okayama", "dishes": "海老拉麵"}}]'::jsonb,
+  '[{"time": "10:45", "type": "transport", "transport": {"tool": "JR", "from": "岡山", "to": "倉敷", "duration": "15min", "note": "山陽本線"}}, {"time": "12:30", "type": "meal", "meal": {"type": "午餐", "name": "倉敷うどん ぶっかけ ふるいち 仲店", "dishes": "烏龍麵"}}, {"time": "14:00", "type": "exp", "exp": {"headline": "倉敷守護神・阿智神社巡禮", "spot": "阿智神社", "desc": "鎮座倉敷美觀地區高台的古社，俯瞰白壁水鄉，氣氛靜謐"}}, {"time": "15:00", "type": "exp", "exp": {"headline": "倉敷文青巷弄尋寶", "spot": "倉敷美觀地區", "desc": "白壁老街與運河沿岸漫步，巷弄裡藏著質感小店與藝廊"}}, {"time": "16:30", "type": "transport", "transport": {"tool": "JR", "from": "倉敷", "to": "岡山", "duration": "15min", "note": "山陽本線"}}, {"time": "17:30", "type": "exp", "exp": {"headline": "日本三大名園靜謐遊", "spot": "後樂園與岡山城", "desc": "後樂園與岡山城：日本三大名園散策，入園至18:00"}}, {"time": "19:00", "type": "meal", "meal": {"type": "晚餐", "name": "和麺ぐり虎 Okayama", "dishes": "海老拉麵"}}]'::jsonb,
   6
 );
 
@@ -102,6 +102,6 @@ insert into days (trip_id, date, day_label, theme, hotel, timeline, sort_order) 
   '5/10 (日)',
   '岡山 • 桃園',
   null,
-  '[{"time": "12:00", "type": "meal", "meal": {"type": "午餐", "name": "おかやま駅弁", "dishes": "火車便當"}}, {"time": "13:00", "type": "transport", "transport": {"tool": "利木津巴士", "from": "岡山西口", "to": "機場", "duration": "30min"}}, {"time": "16:00", "type": "transport", "transport": {"tool": "飛機", "from": "岡山機場", "to": "桃園機場 T1", "duration": "2h45m", "note": "台灣虎航 IT215"}}]'::jsonb,
+  '[{"time": "12:00", "type": "meal", "meal": {"type": "午餐", "name": "おかやま駅弁", "dishes": "火車便當"}}, {"time": "13:00", "type": "transport", "transport": {"tool": "利木津巴士", "from": "岡山西口", "to": "機場", "duration": "30min"}}, {"time": "15:55", "type": "transport", "transport": {"tool": "飛機", "from": "岡山機場", "to": "桃園機場 T1", "duration": "2h45m", "note": "台灣虎航 IT215"}}]'::jsonb,
   8
 );
