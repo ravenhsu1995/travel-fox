@@ -83,9 +83,9 @@ export default function TripView({
               )}
             </div>
             {active.theme && (
-              <h2 className="mt-1 text-lg font-extrabold text-navy">
+              <div className="mt-1.5 text-sm font-semibold text-ink">
                 {active.theme}
-              </h2>
+              </div>
             )}
           </section>
 

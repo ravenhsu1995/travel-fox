@@ -271,12 +271,15 @@ function DayEditor({
     <section className="space-y-5 px-4 py-5">
       <Card>
         <div className="text-xs font-semibold text-muted">{day.day_label}</div>
-        <input
-          value={day.theme ?? ""}
-          onChange={(e) => onChange({ theme: e.target.value || null })}
-          placeholder="這一天的主題（例：入境 → 神戶）"
-          className="mt-2 w-full bg-transparent text-lg font-extrabold text-navy outline-none placeholder:text-muted-lt"
-        />
+        <div className="mt-2">
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted">城市</div>
+          <input
+            value={day.theme ?? ""}
+            onChange={(e) => onChange({ theme: e.target.value || null })}
+            placeholder="例：桃園 • 神戶"
+            className="w-full bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted-lt"
+          />
+        </div>
       </Card>
 
       <HotelEditor

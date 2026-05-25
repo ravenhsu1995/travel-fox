@@ -1,6 +1,15 @@
 import type { TimelineItem } from "@/lib/types";
 import { googleMapUrl } from "@/lib/maps";
 
+function transportEmoji(tool: string): string {
+  if (tool === "飛機") return "✈️";
+  if (tool === "高速船") return "🚢";
+  if (tool === "自駕") return "🚗";
+  if (tool === "巴士" || tool === "利木津巴士") return "🚌";
+  // 特急、JR 及其他鐵道
+  return "🚆";
+}
+
 export default function TimelineItemView({ item }: { item: TimelineItem }) {
   return (
     <article className="relative pl-12">
@@ -9,18 +18,8 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
       </div>
       <div className="absolute left-[26px] top-9 bottom-0 w-px bg-line-2" />
 
-      <div className="mb-1 flex items-start justify-between gap-2">
+      <div className="mb-1">
         <h4 className="text-sm font-bold text-navy">{item.label}</h4>
-        {item.mapQ && (
-          <a
-            href={googleMapUrl(item.mapQ)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 text-[11px] font-semibold text-info hover:underline"
-          >
-            地圖 ↗
-          </a>
-        )}
       </div>
 
       {item.transport && item.transport.length > 0 && (
@@ -28,19 +27,10 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           {item.transport.map((t, i) => (
             <div
               key={i}
-              className={`rounded-md border p-2.5 text-xs ${
-                t.recommended
-                  ? "border-success/40 bg-success/5"
-                  : "border-line bg-card-pure"
-              }`}
+              className="rounded-md border border-success/40 bg-success/5 p-2.5 text-xs"
             >
               <div className="mb-0.5 flex items-center gap-2">
-                <span className="font-bold text-ink">🚆 {t.tool}</span>
-                {t.recommended && (
-                  <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold text-success">
-                    推薦
-                  </span>
-                )}
+                <span className="font-bold text-ink">{transportEmoji(t.tool)} {t.tool}</span>
                 {t.duration && (
                   <span className="ml-auto text-muted">{t.duration}</span>
                 )}
@@ -73,19 +63,9 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
               {e.desc && (
                 <div className="mt-0.5 text-muted">{e.desc}</div>
               )}
-              <div className="mt-1 flex items-center gap-2 text-[11px]">
-                {e.cost && <span className="text-ink-2">{e.cost}</span>}
-                {e.mapQ && (
-                  <a
-                    href={googleMapUrl(e.mapQ)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto font-semibold text-info hover:underline"
-                  >
-                    地圖 ↗
-                  </a>
-                )}
-              </div>
+              {e.cost && (
+                <div className="mt-1 text-[11px] text-ink-2">{e.cost}</div>
+              )}
             </div>
           ))}
         </div>
