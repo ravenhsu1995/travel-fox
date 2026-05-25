@@ -122,8 +122,8 @@ export default async function Home() {
                 />
               </div>
 
-              <div className="min-w-0">
-                <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-teal/10 px-2 py-0.5 text-[10px] font-semibold text-teal">
+              <div className="flex h-[104px] min-w-0 translate-x-1.5 flex-col justify-between min-[380px]:h-[108px] min-[380px]:translate-x-2 sm:h-[118px]">
+                <div className="inline-flex w-fit items-center gap-1 rounded-full bg-teal/10 px-2 py-0.5 text-[10px] font-semibold text-teal">
                   <svg width="12" height="12" className="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="M8 3v15M16 6v15M3 6l5-3 8 3 5-3v15l-5 3-8-3-5 3V6z" />
                   </svg>
@@ -132,7 +132,7 @@ export default async function Home() {
                 <h2 className="whitespace-nowrap text-[16px] font-extrabold leading-tight text-navy min-[380px]:text-[17px]">
                   {trip.title}
                 </h2>
-                <div className="mt-1 flex items-center gap-1.5 text-[8px] text-muted min-[380px]:text-[11px]">
+                <div className="flex items-center gap-1.5 text-[8px] text-muted min-[380px]:text-[11px]">
                   <svg width="12" height="12" className="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <rect x="3" y="5" width="18" height="16" rx="2" />
                     <path d="M3 9h18M8 3v4M16 3v4" />
@@ -142,7 +142,7 @@ export default async function Home() {
                   </span>
                 </div>
                 {trip.subtitle && (
-                  <div className="mt-1 flex items-center gap-1.5 text-[11px] text-ink-2">
+                  <div className="flex items-center gap-1.5 text-[11px] text-ink-2">
                     <svg width="12" height="12" className="shrink-0 text-orange" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                       <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z" />
                     </svg>
@@ -157,7 +157,7 @@ export default async function Home() {
                   alt=""
                   fill
                   sizes="112px"
-                  className="translate-x-2 scale-[1.18] object-contain min-[380px]:translate-x-3 min-[380px]:scale-[1.22] sm:translate-x-4 sm:scale-110"
+                  className="translate-x-2 scale-[1.3] object-contain min-[380px]:translate-x-3 min-[380px]:scale-[1.36] sm:translate-x-4 sm:scale-[1.18]"
                   aria-hidden
                 />
               </div>
