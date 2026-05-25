@@ -12,7 +12,13 @@ import type {
   TransportOption,
   Trip,
 } from "@/lib/types";
-import { saveDay, saveTrip, deleteTrip } from "@/app/trips/[tripId]/edit/actions";
+import {
+  saveDay,
+  saveTrip,
+  deleteTrip,
+  addDay,
+  deleteDay,
+} from "@/app/trips/[tripId]/edit/actions";
 
 type Props = {
   initialTrip: Trip;
@@ -91,6 +97,32 @@ export default function TripEditor({
     });
   }
 
+  function onAddDay() {
+    addDay(trip.id).then((r) => {
+      if (!r.ok) {
+        flash("err", r.error);
+        return;
+      }
+      router.refresh();
+      flash("ok", "已新增一天");
+    });
+  }
+
+  function onDeleteDay() {
+    if (!active) return;
+    if (!confirm(`確定要刪除 ${active.day_label ?? active.date}？該天所有時段都會一併刪除。`)) return;
+    deleteDay(active.id, trip.id).then((r) => {
+      if (!r.ok) {
+        flash("err", r.error);
+        return;
+      }
+      const remaining = days.filter((d) => d.id !== active.id);
+      setDays(remaining);
+      setActiveDayId(remaining[0]?.id ?? "");
+      flash("ok", "已刪除此天");
+    });
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
       <div className="sticky top-14 z-20 bg-gradient-to-b from-navy to-navy-lt px-4 pt-3 pb-2 text-white">
@@ -133,6 +165,12 @@ export default function TripEditor({
                 {d.day_label ?? d.date}
               </button>
             ))}
+            <button
+              onClick={onAddDay}
+              className="flex-shrink-0 rounded-full border border-white/30 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80 hover:bg-white/15"
+            >
+              + 新增一天
+            </button>
           </div>
         )}
       </div>
@@ -165,7 +203,13 @@ export default function TripEditor({
           onChange={updateActive}
           saving={savingDay}
           onSave={onDaySave}
+          onDelete={onDeleteDay}
         />
+      )}
+      {!showTripForm && !active && (
+        <section className="px-4 py-10 text-center text-sm text-muted">
+          這個行程還沒有任何一天，點上方「+ 新增一天」開始
+        </section>
       )}
     </main>
   );
@@ -261,11 +305,13 @@ function DayEditor({
   onChange,
   saving,
   onSave,
+  onDelete,
 }: {
   day: Day;
   onChange: (p: Partial<Day>) => void;
   saving: boolean;
   onSave: () => void;
+  onDelete: () => void;
 }) {
   return (
     <section className="space-y-5 px-4 py-5">
@@ -297,6 +343,16 @@ function DayEditor({
       >
         {saving ? "儲存中…" : "💾 儲存這一天"}
       </button>
+
+      <details className="text-xs text-muted">
+        <summary className="cursor-pointer">危險區</summary>
+        <button
+          onClick={onDelete}
+          className="mt-2 rounded-md border border-danger/40 px-3 py-2 text-xs font-semibold text-danger hover:bg-danger/10"
+        >
+          🗑 刪除這一天
+        </button>
+      </details>
     </section>
   );
 }

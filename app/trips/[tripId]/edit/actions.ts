@@ -68,4 +68,57 @@ export async function deleteTrip(tripId: string) {
   return { ok: true } as const;
 }
 
+export async function addDay(tripId: string) {
+  const supabase = await createClient();
+  const { data: existing, error: e1 } = await supabase
+    .from("days")
+    .select("date, sort_order")
+    .eq("trip_id", tripId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  if (e1) return { ok: false as const, error: e1.message };
+
+  const last = existing?.[0];
+  const nextDate = last
+    ? new Date(new Date(last.date).getTime() + 86_400_000)
+        .toISOString()
+        .slice(0, 10)
+    : new Date().toISOString().slice(0, 10);
+  const nextSort = (last?.sort_order ?? -1) + 1;
+
+  const [y, m, d] = nextDate.split("-");
+  const weekday = ["日", "一", "二", "三", "四", "五", "六"][
+    new Date(nextDate).getDay()
+  ];
+  const dayLabel = `${+m}/${+d} (${weekday})`;
+
+  const { data: inserted, error: e2 } = await supabase
+    .from("days")
+    .insert({
+      trip_id: tripId,
+      date: nextDate,
+      day_label: dayLabel,
+      theme: null,
+      hotel: null,
+      timeline: [],
+      sort_order: nextSort,
+    })
+    .select("id")
+    .single();
+  if (e2) return { ok: false as const, error: e2.message };
+
+  revalidatePath(`/trips/${tripId}`);
+  revalidatePath(`/trips/${tripId}/edit`);
+  return { ok: true as const, dayId: inserted.id, date: nextDate };
+}
+
+export async function deleteDay(dayId: string, tripId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("days").delete().eq("id", dayId);
+  if (error) return { ok: false, error: error.message } as const;
+  revalidatePath(`/trips/${tripId}`);
+  revalidatePath(`/trips/${tripId}/edit`);
+  return { ok: true } as const;
+}
+
 export type { SaveTripPayload, SaveDayPayload, Trip, Day };
