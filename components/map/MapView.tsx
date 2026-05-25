@@ -33,6 +33,9 @@ export default function MapView({ coords, mapQ, label, height = 200 }: Props) {
   const [icon, setIcon] = useState<unknown>(null);
 
   useEffect(() => {
+    // SSR avoidance: flip to mounted on first client render so the placeholder
+    // gives way to the leaflet map. Cascading render is intentional here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     import("leaflet").then((L) => {
       setIcon(

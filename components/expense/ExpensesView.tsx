@@ -8,7 +8,6 @@ import { formatMoney, toNTD, CURRENCY_SYMBOL } from "@/lib/currency";
 import {
   addExpense,
   deleteExpense,
-  updateExpense,
 } from "@/app/trips/[tripId]/expenses/actions";
 
 const CATEGORIES = [
