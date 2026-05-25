@@ -10,9 +10,9 @@ function transportEmoji(tool: string): string {
 }
 
 const TYPE_BADGE: Record<TimelineItem["type"], { label: string; cls: string }> = {
-  transport: { label: "交通", cls: "bg-success/15 text-success" },
-  meal: { label: "餐飲", cls: "bg-gold/15 text-gold" },
-  exp: { label: "體驗", cls: "bg-info/15 text-info" },
+  transport: { label: "交通", cls: "text-success" },
+  meal: { label: "餐飲", cls: "text-gold" },
+  exp: { label: "體驗", cls: "text-info" },
 };
 
 export default function TimelineItemView({ item }: { item: TimelineItem }) {
@@ -24,10 +24,8 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
       </div>
       <div className="absolute left-[26px] top-9 bottom-0 w-px bg-line-2" />
 
-      <div className="mb-2">
-        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.cls}`}>
-          {badge.label}
-        </span>
+      <div className={`mb-1 text-[10px] font-bold ${badge.cls}`}>
+        {badge.label}
       </div>
 
       {item.type === "transport" && item.transport && (
