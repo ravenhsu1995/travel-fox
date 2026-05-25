@@ -13,10 +13,19 @@
   --color-gold-lt: #d9a832;
   --color-gold-pale: rgba(196, 144, 15, 0.11);
 
+  /* Fox-orange (brand accent, matches logo + mockup primary button) */
+  --color-orange: #e8843a;
+  --color-orange-lt: #f1a065;
+  --color-orange-pale: rgba(232, 132, 58, 0.12);
+
+  /* Teal (mockup secondary accent — pin marker, outline button) */
+  --color-teal: #2e7878;
+  --color-teal-lt: #4a9595;
+
   /* Surfaces */
-  --color-bg: #f0ece0;
-  --color-bg-2: #e8e3d6;
-  --color-card: #faf8f2;
+  --color-bg: #fdf8f2;
+  --color-bg-2: #f4eddf;
+  --color-card: #ffffff;
   --color-card-pure: #ffffff;
 
   /* Text */
@@ -24,6 +33,9 @@
   --color-ink-2: #38342c;
   --color-muted: #706960;
   --color-muted-lt: #a09890;
+
+  /* Brand brown — matches the "旅行狐狸" text in the logo */
+  --color-brand: #4e2c0f;
 
   /* Semantic */
   --color-line: #e0dccf;
@@ -52,6 +64,9 @@
   --font-sans:
     var(--font-noto-tc), -apple-system, "PingFang TC", "Microsoft JhengHei",
     sans-serif;
+  --font-serif:
+    var(--font-noto-serif-tc), "Noto Serif TC", "PingFang TC", "Songti TC",
+    "Microsoft JhengHei", serif;
 }
 
 * {
@@ -68,6 +83,7 @@ body {
   background: var(--color-bg);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 .no-scrollbar::-webkit-scrollbar {

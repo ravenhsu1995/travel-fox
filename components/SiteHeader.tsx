@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,9 +9,20 @@ export default async function SiteHeader() {
   const email = data?.claims?.email as string | undefined;
 
   return (
-    <header className="sticky top-0 z-30 mx-auto flex h-14 w-full max-w-[480px] items-center justify-between border-b border-line bg-card/85 px-4 backdrop-blur">
-      <Link href="/" className="text-sm font-extrabold text-navy">
-        🦊 旅行狐狸
+    <header
+      className="relative z-30 mx-auto flex w-full max-w-[480px] items-center justify-between px-5 py-3"
+      style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+    >
+      <Link href="/" className="flex items-center" aria-label="旅行狐狸 首頁">
+        <Image
+          src="/logo.png"
+          alt="旅行狐狸"
+          width={1208}
+          height={311}
+          preload
+          sizes="240px"
+          className="h-12 w-auto"
+        />
       </Link>
       {isAuthed ? (
         <div className="flex items-center gap-3 text-xs">
