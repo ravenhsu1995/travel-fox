@@ -120,26 +120,28 @@ export default function TripEditor({
     const refDay = position === "before" ? firstDay : lastDay;
     if (!refDay) return;
     setAddingDay(false);
-    addDay(trip.id, position, refDay.id).then((r) => {
-      if (!r.ok) {
-        flash("err", r.error);
-        return;
-      }
-      const newDay = r.day as Day;
-      setDays((prev) => {
-        const refSortOrder = refDay.sort_order;
-        const shifted = prev.map((d) =>
-          (position === "after"
-            ? d.sort_order > refSortOrder
-            : d.sort_order >= refSortOrder)
-            ? { ...d, sort_order: d.sort_order + 1 }
-            : d,
-        );
-        return [...shifted, newDay].sort((a, b) => a.sort_order - b.sort_order);
-      });
-      setActiveDayId(newDay.id);
-      flash("ok", "已新增一天");
-    });
+    addDay(trip.id, position, refDay.id)
+      .then((r) => {
+        if (!r.ok) {
+          flash("err", r.error);
+          return;
+        }
+        const newDay = r.day as Day;
+        setDays((prev) => {
+          const refSortOrder = refDay.sort_order;
+          const shifted = prev.map((d) =>
+            (position === "after"
+              ? d.sort_order > refSortOrder
+              : d.sort_order >= refSortOrder)
+              ? { ...d, sort_order: d.sort_order + 1 }
+              : d,
+          );
+          return [...shifted, newDay].sort((a, b) => a.sort_order - b.sort_order);
+        });
+        setActiveDayId(newDay.id);
+        flash("ok", "已新增一天");
+      })
+      .catch(() => flash("err", "新增失敗，請重試"));
   }
 
   function onDeleteDay() {

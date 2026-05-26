@@ -91,7 +91,11 @@ export async function addDay(
     : new Date();
   const newDate = new Date(refDate);
   newDate.setDate(newDate.getDate() + (position === "after" ? 1 : -1));
-  const newDateStr = newDate.toISOString().slice(0, 10);
+  // Use local-time parts to avoid UTC-offset shifting the date
+  const yr = newDate.getFullYear();
+  const mo = String(newDate.getMonth() + 1).padStart(2, "0");
+  const dy = String(newDate.getDate()).padStart(2, "0");
+  const newDateStr = `${yr}-${mo}-${dy}`;
 
   // Check uniqueness
   if ((allDays ?? []).some((d) => d.date === newDateStr))
@@ -135,7 +139,6 @@ export async function addDay(
   if (e2) return { ok: false as const, error: e2.message };
 
   revalidatePath(`/trips/${tripId}`);
-  revalidatePath(`/trips/${tripId}/edit`);
   return { ok: true as const, day: inserted };
 }
 
@@ -144,7 +147,6 @@ export async function deleteDay(dayId: string, tripId: string) {
   const { error } = await supabase.from("days").delete().eq("id", dayId);
   if (error) return { ok: false, error: error.message } as const;
   revalidatePath(`/trips/${tripId}`);
-  revalidatePath(`/trips/${tripId}/edit`);
   return { ok: true } as const;
 }
 
