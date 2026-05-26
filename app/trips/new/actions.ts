@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 function eachDate(start: string, end: string): string[] {
@@ -25,6 +24,7 @@ function dayLabel(dateStr: string): string {
 export type CreateTripResult =
   | { ok: true; tripId: string }
   | { ok: false; error: string };
+
 
 export async function createTrip(formData: FormData): Promise<CreateTripResult> {
   const title = String(formData.get("title") ?? "").trim();
@@ -72,5 +72,5 @@ export async function createTrip(formData: FormData): Promise<CreateTripResult> 
     return { ok: false, error: daysErr.message };
   }
 
-  redirect(`/trips/${trip.id}`);
+  return { ok: true, tripId: trip.id };
 }
