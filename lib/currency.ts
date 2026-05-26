@@ -49,10 +49,7 @@ export const FALLBACK_RATES_TO_TWD: Record<Currency, number> = {
 
 export function formatMoney(amount: number, currency: Currency): string {
   const symbol = CURRENCY_SYMBOL[currency] ?? "";
-  const rounded =
-    currency === "JPY"
-      ? Math.round(amount)
-      : Math.round(amount * 100) / 100;
+  const rounded = Math.round(amount);
   return `${symbol}${rounded.toLocaleString("en-US")}`;
 }
 
