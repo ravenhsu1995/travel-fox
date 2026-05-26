@@ -31,20 +31,10 @@ export default function TripView({
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
-      <div className="relative overflow-hidden bg-gradient-to-b from-navy to-navy-lt px-4 pt-4 pb-2 text-white">
-        <Image
-          src="/mascot-trip-header.webp"
-          alt=""
-          width={213}
-          height={256}
-          sizes="100px"
-          priority
-          aria-hidden
-          className="pointer-events-none absolute right-1 top-1 h-[100px] w-auto select-none"
-        />
-        <div className="relative flex items-baseline justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="truncate text-base font-extrabold tracking-wide">
+      <div className="bg-gradient-to-b from-navy to-navy-lt px-4 pt-4 pb-2 text-white">
+        <div className="flex items-baseline justify-between gap-3">
+          <div>
+            <h1 className="text-base font-extrabold tracking-wide">
               {trip.cover_emoji} {trip.title}
             </h1>
             <p className="text-[11px] opacity-70">
@@ -55,14 +45,14 @@ export default function TripView({
           {showExpenseLink && (
             <Link
               href={`/trips/${trip.id}/expenses`}
-              className="relative z-10 rounded-full bg-gold px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
+              className="rounded-full bg-gold px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
             >
               💴 記帳
             </Link>
           )}
         </div>
 
-        <div className="no-scrollbar relative mt-3 flex gap-1.5 overflow-x-auto pb-2 pr-24">
+        <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-2">
           {sorted.map((d, i) => (
             <button
               key={d.id}
@@ -81,8 +71,18 @@ export default function TripView({
 
       {active && (
         <div className="space-y-4 px-4 py-5">
-          <section className="rounded-xl bg-card p-4 shadow-sm">
-            <div className="flex items-center justify-between">
+          <section className="relative overflow-hidden rounded-xl bg-card p-4 shadow-sm">
+            <Image
+              src="/mascot-trip-header.webp"
+              alt=""
+              width={213}
+              height={256}
+              sizes="64px"
+              priority
+              aria-hidden
+              className="pointer-events-none absolute right-4 top-1/2 h-[60px] w-auto -translate-y-1/2 select-none"
+            />
+            <div className="relative flex items-center justify-between pr-16">
               <div className="text-xs font-semibold text-muted">
                 {active.day_label}
               </div>
@@ -96,7 +96,7 @@ export default function TripView({
               )}
             </div>
             {active.theme && (
-              <div className="mt-1.5 text-sm font-semibold text-ink">
+              <div className="relative mt-1.5 text-sm font-semibold text-ink pr-16">
                 {active.theme}
               </div>
             )}
