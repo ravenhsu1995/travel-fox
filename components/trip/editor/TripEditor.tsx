@@ -17,7 +17,6 @@ import { CURRENCIES, CURRENCY_LABEL, CURRENCY_SYMBOL } from "@/lib/currency";
 import {
   saveTrip,
   deleteTrip,
-  deleteDay,
 } from "@/app/trips/[tripId]/edit/actions";
 import {
   resolveDayHotel,
@@ -119,6 +118,25 @@ async function addDayRequest(
   }
 
   return { ok: true as const, day: data.day };
+}
+
+async function deleteDayRequest(tripId: string, dayId: string) {
+  const res = await fetch(`/api/trips/${tripId}/days/${dayId}`, {
+    method: "DELETE",
+  });
+  const data = (await res.json()) as
+    | { ok: true }
+    | { ok: false; error?: string };
+
+  if (!res.ok) {
+    const error = "error" in data ? data.error : undefined;
+    return { ok: false as const, error: error ?? "刪除失敗" };
+  }
+  if (!data.ok) {
+    return { ok: false as const, error: data.error ?? "刪除失敗" };
+  }
+
+  return { ok: true as const };
 }
 
 export default function TripEditor({
@@ -311,7 +329,7 @@ export default function TripEditor({
   function onDeleteDay() {
     if (!active) return;
     if (!confirm(`確定要刪除 ${active.day_label ?? active.date}？該天所有時段都會一併刪除。`)) return;
-    deleteDay(active.id, trip.id).then((r) => {
+    deleteDayRequest(trip.id, active.id).then((r) => {
       if (!r.ok) {
         flash("err", r.error);
         return;

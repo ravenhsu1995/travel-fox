@@ -101,3 +101,37 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ tripId: string; dayId: string }> },
+) {
+  try {
+    const jwt = await getAccessToken();
+    if (!jwt) {
+      return NextResponse.json({ ok: false, error: "未登入" }, { status: 401 });
+    }
+
+    const { tripId, dayId } = await params;
+    const result = await pgrest({
+      method: "DELETE",
+      path: `/rest/v1/days?id=eq.${dayId}&trip_id=eq.${tripId}`,
+      jwt,
+    });
+
+    if (!result.ok) {
+      return NextResponse.json(
+        { ok: false, error: result.error },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { ok: false, error: `刪除失敗：${msg}` },
+      { status: 500 },
+    );
+  }
+}
