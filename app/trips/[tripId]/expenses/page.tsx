@@ -14,14 +14,14 @@ export default async function ExpensesPage({
 
   const { data: trip } = await supabase
     .from("trips")
-    .select("*")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
     .eq("id", tripId)
     .maybeSingle<Trip>();
   if (!trip) notFound();
 
   const { data: expenses } = await supabase
     .from("expenses")
-    .select("*")
+    .select("id, trip_id, description, amount, currency, category, date, created_at")
     .eq("trip_id", tripId)
     .order("created_at", { ascending: false });
 

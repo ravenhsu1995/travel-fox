@@ -14,7 +14,7 @@ export default async function TripDetailPage({
 
   const { data: trip } = await supabase
     .from("trips")
-    .select("*")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
     .eq("id", tripId)
     .maybeSingle<Trip>();
 
@@ -22,7 +22,7 @@ export default async function TripDetailPage({
 
   const { data: days } = await supabase
     .from("days")
-    .select("*")
+    .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
     .eq("trip_id", tripId)
     .order("sort_order");
 

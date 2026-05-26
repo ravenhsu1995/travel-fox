@@ -17,7 +17,7 @@ export default async function TripsPage() {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select("*")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
     .eq("owner_id", claims.claims.sub)
     .order("created_at", { ascending: false });
 

@@ -10,7 +10,7 @@ export default async function SamplePage() {
 
   const { data: trip, error: tripErr } = await supabase
     .from("trips")
-    .select("*")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
     .eq("is_public_sample", true)
     .maybeSingle<Trip>();
 
@@ -34,7 +34,7 @@ export default async function SamplePage() {
 
   const { data: days } = await supabase
     .from("days")
-    .select("*")
+    .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
     .eq("trip_id", trip.id)
     .order("sort_order");
 
