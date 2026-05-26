@@ -13,7 +13,6 @@ import type {
   Trip,
 } from "@/lib/types";
 import {
-  saveDay,
   saveTrip,
   deleteTrip,
   addDay,
@@ -25,6 +24,34 @@ type Props = {
   initialDays: Day[];
   initialDayId?: string;
 };
+
+async function saveDayRequest(
+  tripId: string,
+  day: Pick<Day, "id" | "theme" | "hotel" | "timeline">,
+) {
+  const res = await fetch(`/api/trips/${tripId}/days/${day.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      theme: day.theme,
+      hotel: day.hotel,
+      timeline: day.timeline,
+    }),
+  });
+  const data = (await res.json()) as
+    | { ok: true }
+    | { ok: false; error?: string };
+
+  if (!res.ok) {
+    const error = "error" in data ? data.error : undefined;
+    return { ok: false as const, error: error ?? "儲存失敗" };
+  }
+  if (!data.ok) {
+    return { ok: false as const, error: data.error ?? "儲存失敗" };
+  }
+
+  return { ok: true as const };
+}
 
 export default function TripEditor({
   initialTrip,
@@ -78,13 +105,7 @@ export default function TripEditor({
     if (!active) return;
     startDaySave(async () => {
       try {
-        const r = await saveDay({
-          id: active.id,
-          trip_id: trip.id,
-          theme: active.theme,
-          hotel: active.hotel,
-          timeline: active.timeline,
-        });
+        const r = await saveDayRequest(trip.id, active);
         if (r.ok) flash("ok", "此日已儲存");
         else flash("err", r.error);
       } catch (e: unknown) {
