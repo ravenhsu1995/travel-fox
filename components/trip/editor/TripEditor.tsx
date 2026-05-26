@@ -249,11 +249,11 @@ function TripMetaForm({
           className="h-12 w-full rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
         />
       </Field>
-      <Field label="副標題">
-        <input
-          value={trip.subtitle ?? ""}
-          onChange={(e) => setTrip({ ...trip, subtitle: e.target.value || null })}
-          className="h-12 w-full rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
+      <Field label="副標題（城市）">
+        <CityChipsEditor
+          value={trip.subtitle}
+          onChange={(v) => setTrip({ ...trip, subtitle: v })}
+          separator=" · "
         />
       </Field>
       <div className="grid grid-cols-2 gap-3">
@@ -798,16 +798,18 @@ function TimePicker({
 function CityChipsEditor({
   value,
   onChange,
+  separator = " • ",
 }: {
   value: string | null;
   onChange: (v: string | null) => void;
+  separator?: string;
 }) {
   const cities = value
-    ? value.split("•").map((s) => s.trim()).filter(Boolean)
+    ? value.split(/\s*[•·]\s*/).map((s) => s.trim()).filter(Boolean)
     : [];
   const [draft, setDraft] = useState("");
   function commit(next: string[]) {
-    onChange(next.length === 0 ? null : next.join(" • "));
+    onChange(next.length === 0 ? null : next.join(separator));
   }
   function add() {
     const v = draft.trim();
