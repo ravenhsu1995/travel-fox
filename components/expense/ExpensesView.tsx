@@ -214,13 +214,15 @@ export default function ExpensesView({
       </div>
 
       <section className="mb-3 rounded-xl bg-navy p-5 text-white shadow-md">
-        <h2 className="text-base font-bold text-white">行程總花費</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-bold text-white">行程總花費</h2>
+          <span className="text-[10px] text-white/70">
+            即時匯率 · {fmtUpdatedAt(rates.fetched_at)}
+            {rates.source === "fallback" && "（離線）"}
+          </span>
+        </div>
         <div className="mt-1 text-3xl font-extrabold">
           {formatMoney(grandTotal, displayCurrency)}
-        </div>
-        <div className="mt-0.5 text-[10px] text-white/70">
-          即時匯率 · {fmtUpdatedAt(rates.fetched_at)}
-          {rates.source === "fallback" && "（離線）"}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
