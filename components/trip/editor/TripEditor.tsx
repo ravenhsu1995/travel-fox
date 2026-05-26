@@ -418,7 +418,7 @@ function HotelEditor({
           </div>
         </div>
         <TextInput
-          placeholder="費用備註"
+          placeholder="費用"
           value={hotel.cost ?? ""}
           onChange={(v) => onChange({ ...hotel, cost: v })}
         />
