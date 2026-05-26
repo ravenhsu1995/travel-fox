@@ -1,5 +1,6 @@
 import type { TimelineItem } from "@/lib/types";
 import { googleMapUrl } from "@/lib/maps";
+import CostBadge from "./CostBadge";
 
 function transportEmoji(tool: string): string {
   if (tool === "飛機") return "✈️";
@@ -41,9 +42,7 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           <div className="text-muted">
             {item.transport.from} → {item.transport.to}
           </div>
-          {item.transport.cost && (
-            <div className="mt-0.5 text-ink-2">{item.transport.cost}</div>
-          )}
+          {item.transport.cost && <CostBadge value={item.transport.cost} />}
           {item.transport.note && (
             <div className="mt-1 text-[11px] text-muted">{item.transport.note}</div>
           )}
@@ -67,9 +66,7 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           {item.meal.dishes && (
             <div className="mt-0.5 text-muted">{item.meal.dishes}</div>
           )}
-          {item.meal.cost && (
-            <div className="mt-0.5 text-ink-2">{item.meal.cost}</div>
-          )}
+          {item.meal.cost && <CostBadge value={item.meal.cost} />}
         </div>
       )}
 
@@ -80,9 +77,7 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           {item.exp.desc && (
             <div className="mt-0.5 text-muted">{item.exp.desc}</div>
           )}
-          {item.exp.cost && (
-            <div className="mt-1 text-[11px] text-ink-2">{item.exp.cost}</div>
-          )}
+          {item.exp.cost && <CostBadge value={item.exp.cost} />}
         </div>
       )}
     </article>

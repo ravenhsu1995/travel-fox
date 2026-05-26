@@ -1,5 +1,6 @@
 import { googleMapUrl } from "@/lib/maps";
 import type { ResolvedHotel } from "@/lib/resolveDayHotel";
+import CostBadge from "./CostBadge";
 
 export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
   const { hotel, phase } = resolved;
@@ -27,9 +28,7 @@ export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
           )}
         </div>
       )}
-      {showCost && (
-        <div className="mt-1 text-xs text-ink-2">{hotel.cost}</div>
-      )}
+      {showCost && <CostBadge value={hotel.cost!} />}
       {(hotel.mapQ || hotel.name) && (
         <a
           href={googleMapUrl(hotel.mapQ || hotel.name)}
