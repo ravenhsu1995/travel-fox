@@ -353,7 +353,7 @@ function ExpenseRow({
           <span>{row.category}</span>
           {row.kind === "derived" && (
             <span className="rounded-full bg-info/10 px-1.5 py-0.5 text-[9px] font-bold text-info">
-              🔗 行程連動
+              🔗
             </span>
           )}
         </div>
