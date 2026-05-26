@@ -77,7 +77,7 @@ export default function NewTripPage() {
           />
         </Field>
 
-        <Field label="副標題（可選）">
+        <Field label="城市／國家">
           <div className="space-y-2">
             <div className="flex flex-wrap gap-1.5">
               {subtitleChips.map((c, i) => (

@@ -249,7 +249,7 @@ function TripMetaForm({
           className="h-12 w-full rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
         />
       </Field>
-      <Field label="副標題">
+      <Field label="城市／國家">
         <CityChipsEditor
           value={trip.subtitle}
           onChange={(v) => setTrip({ ...trip, subtitle: v })}
