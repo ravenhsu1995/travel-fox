@@ -7,6 +7,7 @@ import type { Day, Trip } from "@/lib/types";
 import HotelCard from "./HotelCard";
 import TimelineItemView from "./TimelineItemView";
 import { resolveDayHotel } from "@/lib/resolveDayHotel";
+import { mascotIndexForDay } from "@/lib/mascot-for-day";
 
 type Props = {
   trip: Trip;
@@ -28,16 +29,17 @@ export default function TripView({
   const [activeIdx, setActiveIdx] = useState(0);
   const active = sorted[activeIdx];
   const resolvedHotel = active ? resolveDayHotel(sorted, active.id) : null;
+  const mascotIndex = mascotIndexForDay(trip.id, activeIdx);
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
       <div className="bg-gradient-to-b from-navy to-navy-lt px-4 pt-4 pb-2 text-white">
         <div className="flex items-baseline justify-between gap-3">
-          <div>
-            <h1 className="text-base font-extrabold tracking-wide">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-extrabold tracking-wide">
               {trip.cover_emoji} {trip.title}
             </h1>
-            <p className="text-[11px] opacity-70">
+            <p className="mt-0.5 truncate text-[11px] opacity-70">
               {trip.start_date} – {trip.end_date}
               {trip.subtitle && ` · ${trip.subtitle}`}
             </p>
@@ -45,7 +47,7 @@ export default function TripView({
           {showExpenseLink && (
             <Link
               href={`/trips/${trip.id}/expenses`}
-              className="rounded-full bg-gold px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
+              className="shrink-0 rounded-full bg-gold px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
             >
               💴 記帳
             </Link>
@@ -73,16 +75,17 @@ export default function TripView({
         <div className="space-y-4 px-4 py-5">
           <section className="relative overflow-hidden rounded-xl bg-card p-4 shadow-sm">
             <Image
-              src="/mascot-trip-header.webp"
+              key={mascotIndex}
+              src={`/mascot-trip-${mascotIndex}.webp`}
               alt=""
-              width={213}
+              width={256}
               height={256}
-              sizes="64px"
+              sizes="80px"
               priority
               aria-hidden
               className="pointer-events-none absolute right-4 top-1/2 h-[60px] w-auto -translate-y-1/2 select-none"
             />
-            <div className="relative flex items-center justify-between pr-16">
+            <div className="relative flex items-center justify-between pr-20">
               <div className="text-xs font-semibold text-muted">
                 {active.day_label}
               </div>
@@ -96,7 +99,7 @@ export default function TripView({
               )}
             </div>
             {active.theme && (
-              <div className="relative mt-1.5 text-sm font-semibold text-ink pr-16">
+              <div className="relative mt-1.5 text-sm font-semibold text-ink pr-20">
                 {active.theme}
               </div>
             )}
