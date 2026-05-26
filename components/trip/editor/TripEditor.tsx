@@ -141,7 +141,9 @@ export default function TripEditor({
         setActiveDayId(newDay.id);
         flash("ok", "已新增一天");
       })
-      .catch(() => flash("err", "新增失敗，請重試"));
+      .catch((e: unknown) =>
+        flash("err", e instanceof Error ? e.message : "新增失敗，請重試"),
+      );
   }
 
   function onDeleteDay() {
