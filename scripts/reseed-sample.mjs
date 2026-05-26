@@ -31,7 +31,7 @@ const trip = {
   subtitle: '神戶 · 鳥取 · 岡山',
   start_date: '2026-05-02',
   end_date: '2026-05-10',
-  cover_emoji: '🗾',
+  cover_emoji: '🌠',
   is_public_sample: true,
 };
 

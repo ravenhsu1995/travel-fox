@@ -12,7 +12,7 @@ insert into trips (id, owner_id, title, subtitle, start_date, end_date, cover_em
   '神戶 · 鳥取 · 岡山',
   '2026-05-02',
   '2026-05-10',
-  '🗾',
+  '🌠',
   true
 );
 

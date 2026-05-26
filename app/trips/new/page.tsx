@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createTrip } from "./actions";
 
-const EMOJIS = ["🗾", "🇰🇷", "🇻🇳", "🇹🇭", "🇸🇬", "🏝️", "🏔️", "🏛️", "🗺️"];
+const EMOJIS = ["🤷", "🕺", "🦶", "🍿", "🎇", "🧌", "🗺️", "⛺", "🌠", "🌊", "🎢", "🤗", "❤️‍🔥"];
 
 export default function NewTripPage() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [emoji, setEmoji] = useState("🗺️");
+  const [emoji, setEmoji] = useState("🤷");
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
