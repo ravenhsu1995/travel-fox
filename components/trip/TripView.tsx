@@ -83,7 +83,7 @@ export default function TripView({
               sizes="80px"
               priority
               aria-hidden
-              className="pointer-events-none absolute right-4 top-1/2 h-[60px] w-auto -translate-y-1/2 select-none"
+              className="pointer-events-none absolute right-6 top-1/2 h-[48px] w-auto -translate-y-1/2 select-none"
             />
             <div className="relative flex items-center justify-between pr-20">
               <div className="text-xs font-semibold text-muted">
