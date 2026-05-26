@@ -39,6 +39,7 @@ export type HotelInfo = {
   checkout?: string | null;
   cost?: string;
   mapQ?: string;
+  nights?: number;
 };
 
 export type Trip = {

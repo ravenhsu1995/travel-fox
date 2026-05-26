@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Day, Trip } from "@/lib/types";
 import HotelCard from "./HotelCard";
 import TimelineItemView from "./TimelineItemView";
+import { resolveDayHotel } from "@/lib/resolveDayHotel";
 
 type Props = {
   trip: Trip;
@@ -25,6 +26,7 @@ export default function TripView({
   );
   const [activeIdx, setActiveIdx] = useState(0);
   const active = sorted[activeIdx];
+  const resolvedHotel = active ? resolveDayHotel(sorted, active.id) : null;
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
@@ -89,7 +91,9 @@ export default function TripView({
             )}
           </section>
 
-          {active.hotel && <HotelCard hotel={active.hotel} />}
+          {resolvedHotel && resolvedHotel.hotel && (
+            <HotelCard resolved={resolvedHotel} />
+          )}
 
           {active.timeline.length === 0 ? (
             <div className="rounded-xl border border-dashed border-line-2 bg-card p-6 text-center text-sm text-muted">

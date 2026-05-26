@@ -18,6 +18,11 @@ import {
   addDay,
   deleteDay,
 } from "@/app/trips/[tripId]/edit/actions";
+import {
+  resolveDayHotel,
+  daysRemainingFrom,
+  type ResolvedHotel,
+} from "@/lib/resolveDayHotel";
 
 type Props = {
   initialTrip: Trip;
@@ -106,8 +111,28 @@ export default function TripEditor({
     startDaySave(async () => {
       try {
         const r = await saveDayRequest(trip.id, active);
-        if (r.ok) flash("ok", "此日已儲存");
-        else flash("err", r.error);
+        if (!r.ok) {
+          flash("err", r.error);
+          return;
+        }
+        // If active day has nights > 1, also persist null on shadowed days
+        const n = active.hotel?.nights ?? 1;
+        if (n > 1) {
+          const sorted = [...days].sort((a, b) => a.sort_order - b.sort_order);
+          const idx = sorted.findIndex((d) => d.id === active.id);
+          const shadowed = sorted.slice(idx + 1, idx + n);
+          await Promise.all(
+            shadowed.map((d) =>
+              saveDayRequest(trip.id, {
+                id: d.id,
+                theme: d.theme,
+                hotel: null,
+                timeline: d.timeline,
+              }),
+            ),
+          );
+        }
+        flash("ok", "此日已儲存");
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         flash("err", `儲存失敗：${msg}`);
@@ -119,6 +144,52 @@ export default function TripEditor({
     setDays((arr) =>
       arr.map((d) => (d.id === active?.id ? { ...d, ...patch } : d)),
     );
+  }
+
+  function onNightsChange(newN: number) {
+    if (!active || !active.hotel) return;
+    const sorted = [...days].sort((a, b) => a.sort_order - b.sort_order);
+    const idx = sorted.findIndex((d) => d.id === active.id);
+    if (idx < 0) return;
+    const maxN = sorted.length - idx;
+    const clamped = Math.max(1, Math.min(newN, maxN));
+    const sourceName = active.hotel.name;
+
+    const conflicts: Day[] = [];
+    for (let k = 1; k < clamped; k++) {
+      const d = sorted[idx + k];
+      if (d?.hotel && d.hotel.name && d.hotel.name !== sourceName) {
+        conflicts.push(d);
+      }
+    }
+    if (conflicts.length > 0) {
+      const names = conflicts
+        .map((d) => `${d.day_label ?? d.date} 已有「${d.hotel!.name}」`)
+        .join("、");
+      if (!confirm(`${names}，要覆蓋嗎？`)) return;
+    }
+
+    const shadowedIds = new Set<string>();
+    for (let k = 1; k < clamped; k++) shadowedIds.add(sorted[idx + k].id);
+    setDays((arr) =>
+      arr.map((d) => {
+        if (d.id === active.id && d.hotel) {
+          return { ...d, hotel: { ...d.hotel, nights: clamped } };
+        }
+        if (shadowedIds.has(d.id)) return { ...d, hotel: null };
+        return d;
+      }),
+    );
+
+    // 若有覆蓋衝突，立即 PATCH 清掉伺服器上的資料，避免 reload 又回來
+    for (const c of conflicts) {
+      saveDayRequest(trip.id, {
+        id: c.id,
+        theme: c.theme,
+        hotel: null,
+        timeline: c.timeline,
+      }).catch(() => {});
+    }
   }
 
   function onDeleteTrip() {
@@ -288,7 +359,11 @@ export default function TripEditor({
       {!showTripForm && active && (
         <DayEditor
           day={active}
+          resolved={resolveDayHotel(days, active.id)}
+          daysRemaining={daysRemainingFrom(days, active.id)}
           onChange={updateActive}
+          onJumpToSource={(id) => setActiveDayId(id)}
+          onNightsChange={onNightsChange}
           saving={savingDay}
           onSave={onDaySave}
           onDelete={onDeleteDay}
@@ -390,13 +465,21 @@ function TripMetaForm({
 
 function DayEditor({
   day,
+  resolved,
+  daysRemaining,
   onChange,
+  onJumpToSource,
+  onNightsChange,
   saving,
   onSave,
   onDelete,
 }: {
   day: Day;
+  resolved: ResolvedHotel;
+  daysRemaining: number;
   onChange: (p: Partial<Day>) => void;
+  onJumpToSource: (id: string) => void;
+  onNightsChange: (n: number) => void;
   saving: boolean;
   onSave: () => void;
   onDelete: () => void;
@@ -416,7 +499,11 @@ function DayEditor({
 
       <HotelEditor
         hotel={day.hotel}
+        resolved={resolved}
+        daysRemaining={daysRemaining}
         onChange={(h) => onChange({ hotel: h })}
+        onJumpToSource={onJumpToSource}
+        onNightsChange={onNightsChange}
       />
 
       <TimelineListEditor
@@ -446,11 +533,47 @@ function DayEditor({
 
 function HotelEditor({
   hotel,
+  resolved,
+  daysRemaining,
   onChange,
+  onJumpToSource,
+  onNightsChange,
 }: {
   hotel: HotelInfo | null;
+  resolved: ResolvedHotel;
+  daysRemaining: number;
   onChange: (h: HotelInfo | null) => void;
+  onJumpToSource: (id: string) => void;
+  onNightsChange: (n: number) => void;
 }) {
+  // 連住後續日：唯讀，提供跳轉源頭
+  if (
+    (resolved.phase === "middle" || resolved.phase === "checkout") &&
+    resolved.hotel &&
+    resolved.sourceDayId
+  ) {
+    return (
+      <Card>
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-navy">🏨 住宿</h3>
+        </div>
+        <div className="text-sm font-semibold text-ink">
+          {resolved.hotel.name}
+        </div>
+        <div className="mt-1 text-xs text-muted">
+          本日為「{resolved.hotel.name}」第 {resolved.nightIndex} 晚 / 共{" "}
+          {resolved.totalNights} 晚
+        </div>
+        <button
+          onClick={() => onJumpToSource(resolved.sourceDayId!)}
+          className="mt-2 inline-block text-xs font-semibold text-info hover:underline"
+        >
+          前往源頭編輯 →
+        </button>
+      </Card>
+    );
+  }
+
   if (!hotel) {
     return (
       <Card>
@@ -458,7 +581,13 @@ function HotelEditor({
           <h3 className="text-sm font-bold text-navy">🏨 住宿</h3>
           <button
             onClick={() =>
-              onChange({ name: "", checkin: null, checkout: null, cost: "" })
+              onChange({
+                name: "",
+                checkin: null,
+                checkout: null,
+                cost: "",
+                nights: 1,
+              })
             }
             className="text-xs font-semibold text-gold hover:underline"
           >
@@ -468,6 +597,13 @@ function HotelEditor({
       </Card>
     );
   }
+
+  const nights = hotel.nights ?? 1;
+  const nightOptions = Array.from(
+    { length: Math.max(1, daysRemaining) },
+    (_, i) => i + 1,
+  );
+
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between">
@@ -485,6 +621,20 @@ function HotelEditor({
           value={hotel.name}
           onChange={(v) => onChange({ ...hotel, name: v })}
         />
+        <div className="flex items-center gap-2">
+          <div className="text-[10px] font-semibold text-muted">共幾晚</div>
+          <select
+            value={nights}
+            onChange={(e) => onNightsChange(Number(e.target.value))}
+            className="h-9 rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
+          >
+            {nightOptions.map((n) => (
+              <option key={n} value={n}>
+                {n} 晚
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <div className="mb-1 text-[10px] font-semibold text-muted">Check-in ～</div>
@@ -495,7 +645,7 @@ function HotelEditor({
             />
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold text-muted">明早 ～ Check-out</div>
+            <div className="mb-1 text-[10px] font-semibold text-muted">Check-out</div>
             <TimePicker
               value={hotel.checkout ?? null}
               onChange={(v) => onChange({ ...hotel, checkout: v })}
