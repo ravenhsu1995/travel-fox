@@ -249,11 +249,12 @@ function TripMetaForm({
           className="h-12 w-full rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
         />
       </Field>
-      <Field label="副標題（城市）">
+      <Field label="副標題">
         <CityChipsEditor
           value={trip.subtitle}
           onChange={(v) => setTrip({ ...trip, subtitle: v })}
           separator=" · "
+          placeholder="城市或國家，輸入後按 +"
         />
       </Field>
       <div className="grid grid-cols-2 gap-3">
@@ -799,10 +800,12 @@ function CityChipsEditor({
   value,
   onChange,
   separator = " • ",
+  placeholder = "輸入後按 +",
 }: {
   value: string | null;
   onChange: (v: string | null) => void;
   separator?: string;
+  placeholder?: string;
 }) {
   const cities = value
     ? value.split(/\s*[•·]\s*/).map((s) => s.trim()).filter(Boolean)
@@ -849,7 +852,7 @@ function CityChipsEditor({
               add();
             }
           }}
-          placeholder="輸入城市名後按 +"
+          placeholder={placeholder}
           className="h-9 flex-1 rounded-md border border-line-2 bg-card-pure px-2 text-xs outline-none focus:border-gold"
         />
         <button
