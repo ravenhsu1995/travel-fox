@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
+  Currency,
   Day,
   ExperienceItem,
   HotelInfo,
@@ -12,6 +13,7 @@ import type {
   TransportOption,
   Trip,
 } from "@/lib/types";
+import { CURRENCIES, CURRENCY_LABEL, CURRENCY_SYMBOL } from "@/lib/currency";
 import {
   saveTrip,
   deleteTrip,
@@ -22,6 +24,43 @@ import {
   daysRemainingFrom,
   type ResolvedHotel,
 } from "@/lib/resolveDayHotel";
+
+type CostFields = {
+  cost?: string;
+  costAmount?: number;
+  costCurrency?: Currency;
+};
+
+function validateCostFields(c: CostFields, where: string): string | null {
+  if (typeof c.costAmount === "number" && c.costAmount > 0 && !c.costCurrency) {
+    return `${where}：填了金額但未選擇幣別`;
+  }
+  return null;
+}
+
+function validateDay(day: Day): string | null {
+  if (day.hotel) {
+    const err = validateCostFields(day.hotel, `住宿（${day.hotel.name || "未命名"}）`);
+    if (err) return err;
+  }
+  for (let i = 0; i < day.timeline.length; i++) {
+    const it = day.timeline[i];
+    const label = `第 ${i + 1} 個時段（${it.time}）`;
+    if (it.transport) {
+      const err = validateCostFields(it.transport, `${label} 交通`);
+      if (err) return err;
+    }
+    if (it.meal) {
+      const err = validateCostFields(it.meal, `${label} 餐飲`);
+      if (err) return err;
+    }
+    if (it.exp) {
+      const err = validateCostFields(it.exp, `${label} 體驗`);
+      if (err) return err;
+    }
+  }
+  return null;
+}
 
 type Props = {
   initialTrip: Trip;
@@ -132,6 +171,11 @@ export default function TripEditor({
 
   function onDaySave() {
     if (!active) return;
+    const validationError = validateDay(active);
+    if (validationError) {
+      flash("err", validationError);
+      return;
+    }
     startDaySave(async () => {
       try {
         const r = await saveDayRequest(trip.id, active);
@@ -612,7 +656,6 @@ function HotelEditor({
                 name: "",
                 checkin: null,
                 checkout: null,
-                cost: "",
                 nights: 1,
               })
             }
@@ -680,11 +723,15 @@ function HotelEditor({
             />
           </div>
         </div>
-        <TextInput
-          placeholder="費用"
-          value={hotel.cost ?? ""}
-          onChange={(v) => onChange({ ...hotel, cost: v })}
-        />
+        <div>
+          <div className="mb-1 text-[10px] font-semibold text-muted">費用</div>
+          <CostFieldEditor
+            amount={hotel.costAmount}
+            currency={hotel.costCurrency}
+            legacy={hotel.cost}
+            onChange={(c) => onChange({ ...hotel, ...c })}
+          />
+        </div>
       </div>
     </Card>
   );
@@ -831,6 +878,89 @@ function TimelineItemEditor({
   );
 }
 
+function CostFieldEditor({
+  amount,
+  currency,
+  legacy,
+  onChange,
+}: {
+  amount: number | undefined;
+  currency: Currency | undefined;
+  legacy: string | undefined;
+  onChange: (next: CostFields) => void;
+}) {
+  const hasAmount = typeof amount === "number" && amount > 0;
+  const missingCurrency = hasAmount && !currency;
+  const inputCls =
+    "h-9 w-full rounded-md border bg-card-pure px-2 text-xs outline-none focus:border-gold";
+  const selectCls = `${inputCls} ${
+    missingCurrency ? "border-danger" : "border-line-2"
+  }`;
+
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        <input
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          min={0}
+          value={amount ?? ""}
+          onChange={(e) => {
+            const raw = e.target.value;
+            const next = raw === "" ? undefined : Number(raw);
+            onChange({
+              cost: undefined,
+              costAmount: Number.isFinite(next) ? next : undefined,
+              costCurrency: currency,
+            });
+          }}
+          placeholder="費用"
+          className={`${inputCls} border-line-2`}
+        />
+        <select
+          value={currency ?? ""}
+          onChange={(e) => {
+            const v = e.target.value as Currency | "";
+            onChange({
+              cost: undefined,
+              costAmount: amount,
+              costCurrency: v === "" ? undefined : v,
+            });
+          }}
+          className={selectCls}
+        >
+          <option value="">幣別</option>
+          {CURRENCIES.map((c) => (
+            <option key={c} value={c}>
+              {CURRENCY_SYMBOL[c]} {c} · {CURRENCY_LABEL[c]}
+            </option>
+          ))}
+        </select>
+      </div>
+      {missingCurrency && (
+        <div className="text-[10px] font-semibold text-danger">
+          請選擇幣別
+        </div>
+      )}
+      {legacy && !hasAmount && (
+        <div className="flex items-center justify-between rounded-md bg-warning/10 px-2 py-1 text-[10px] text-warning">
+          <span>原資料：「{legacy}」需重新輸入</span>
+          <button
+            type="button"
+            onClick={() =>
+              onChange({ cost: undefined, costAmount: undefined, costCurrency: undefined })
+            }
+            className="font-bold hover:underline"
+          >
+            清除
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TransportEditor({
   value,
   onChange,
@@ -857,21 +987,22 @@ function TransportEditor({
           value={value.to}
           onChange={(v) => onChange({ ...value, to: v })}
         />
-        <div>
-          <div className="mb-1 text-[10px] font-semibold text-muted">耗時</div>
-          <DurationPicker
-            value={value.duration}
-            onChange={(v) => onChange({ ...value, duration: v })}
-          />
-        </div>
-        <div>
-          <div className="mb-1 text-[10px] font-semibold text-muted">費用</div>
-          <TextInput
-            placeholder="費用"
-            value={value.cost ?? ""}
-            onChange={(v) => onChange({ ...value, cost: v || undefined })}
-          />
-        </div>
+      </div>
+      <div>
+        <div className="mb-1 text-[10px] font-semibold text-muted">耗時</div>
+        <DurationPicker
+          value={value.duration}
+          onChange={(v) => onChange({ ...value, duration: v })}
+        />
+      </div>
+      <div>
+        <div className="mb-1 text-[10px] font-semibold text-muted">費用</div>
+        <CostFieldEditor
+          amount={value.costAmount}
+          currency={value.costCurrency}
+          legacy={value.cost}
+          onChange={(c) => onChange({ ...value, ...c })}
+        />
       </div>
       <TextArea
         placeholder="備註（服務／路線名稱）"
@@ -907,11 +1038,15 @@ function MealEditor({
         value={value.dishes ?? ""}
         onChange={(v) => onChange({ ...value, dishes: v || undefined })}
       />
-      <TextInput
-        placeholder="費用"
-        value={value.cost ?? ""}
-        onChange={(v) => onChange({ ...value, cost: v || undefined })}
-      />
+      <div>
+        <div className="mb-1 text-[10px] font-semibold text-muted">費用</div>
+        <CostFieldEditor
+          amount={value.costAmount}
+          currency={value.costCurrency}
+          legacy={value.cost}
+          onChange={(c) => onChange({ ...value, ...c })}
+        />
+      </div>
     </div>
   );
 }
@@ -936,11 +1071,15 @@ function ExpEditor({
         value={value.desc ?? ""}
         onChange={(v) => onChange({ ...value, desc: v || undefined })}
       />
-      <TextInput
-        placeholder="費用"
-        value={value.cost ?? ""}
-        onChange={(v) => onChange({ ...value, cost: v || undefined })}
-      />
+      <div>
+        <div className="mb-1 text-[10px] font-semibold text-muted">費用</div>
+        <CostFieldEditor
+          amount={value.costAmount}
+          currency={value.costCurrency}
+          legacy={value.cost}
+          onChange={(c) => onChange({ ...value, ...c })}
+        />
+      </div>
     </div>
   );
 }

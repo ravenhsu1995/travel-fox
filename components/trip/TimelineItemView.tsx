@@ -43,7 +43,11 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           <div className="text-muted">
             {item.transport.from} → {item.transport.to}
           </div>
-          {item.transport.cost && <CostBadge value={item.transport.cost} />}
+          <CostBadge
+            value={item.transport.cost}
+            amount={item.transport.costAmount}
+            currency={item.transport.costCurrency}
+          />
           {item.transport.note && (
             <div className="mt-1 text-[11px] text-muted">{item.transport.note}</div>
           )}
@@ -60,7 +64,11 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           {item.meal.dishes && (
             <div className="mt-0.5 text-muted">{item.meal.dishes}</div>
           )}
-          {item.meal.cost && <CostBadge value={item.meal.cost} />}
+          <CostBadge
+            value={item.meal.cost}
+            amount={item.meal.costAmount}
+            currency={item.meal.costCurrency}
+          />
         </div>
       )}
 
@@ -71,7 +79,11 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
           {item.exp.desc && (
             <div className="mt-0.5 text-muted">{item.exp.desc}</div>
           )}
-          {item.exp.cost && <CostBadge value={item.exp.cost} />}
+          <CostBadge
+            value={item.exp.cost}
+            amount={item.exp.costAmount}
+            currency={item.exp.costCurrency}
+          />
         </div>
       )}
     </article>

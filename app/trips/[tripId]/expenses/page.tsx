@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getExchangeRates } from "@/lib/exchange-rates";
 import ExpensesView from "@/components/expense/ExpensesView";
-import type { Expense, Trip } from "@/lib/types";
+import type { Day, Expense, Trip } from "@/lib/types";
 
 export default async function ExpensesPage({
   params,
@@ -19,13 +20,26 @@ export default async function ExpensesPage({
     .maybeSingle<Trip>();
   if (!trip) notFound();
 
-  const { data: expenses } = await supabase
-    .from("expenses")
-    .select("id, trip_id, description, amount, currency, category, date, created_at")
-    .eq("trip_id", tripId)
-    .order("created_at", { ascending: false });
+  const [{ data: days }, { data: expenses }, rates] = await Promise.all([
+    supabase
+      .from("days")
+      .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
+      .eq("trip_id", tripId)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("expenses")
+      .select("id, trip_id, description, amount, currency, category, date, created_at")
+      .eq("trip_id", tripId)
+      .order("created_at", { ascending: false }),
+    getExchangeRates(),
+  ]);
 
   return (
-    <ExpensesView trip={trip} initialExpenses={(expenses ?? []) as Expense[]} />
+    <ExpensesView
+      trip={trip}
+      days={(days ?? []) as Day[]}
+      initialExpenses={(expenses ?? []) as Expense[]}
+      rates={rates}
+    />
   );
 }

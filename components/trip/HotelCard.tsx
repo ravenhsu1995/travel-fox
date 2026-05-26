@@ -11,7 +11,9 @@ export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
     (phase === "single" || phase === "checkin") && !!hotel.checkin;
   const showCheckout =
     (phase === "single" || phase === "checkout") && !!hotel.checkout;
-  const showCost = phase !== "checkout" && !!hotel.cost;
+  const showCost =
+    phase !== "checkout" &&
+    (typeof hotel.costAmount === "number" || !!hotel.cost);
   const mapHref = googleMapUrl(hotel.mapQ || hotel.name);
 
   return (
@@ -24,14 +26,20 @@ export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
       {(showCheckin || showCheckout) && (
         <div className="mt-1 space-y-0.5 text-xs text-muted">
           {showCheckin && (
-            <span className="block">Check-in：{hotel.checkin} 點後</span>
+            <span className="block">Check-in：{hotel.checkin} 後</span>
           )}
           {showCheckout && (
-            <span className="block">明早 check-out 提醒：{hotel.checkout} 點前</span>
+            <span className="block">明早 check-out 提醒：{hotel.checkout} 前</span>
           )}
         </div>
       )}
-      {showCost && <CostBadge value={hotel.cost!} />}
+      {showCost && (
+        <CostBadge
+          value={hotel.cost}
+          amount={hotel.costAmount}
+          currency={hotel.costCurrency}
+        />
+      )}
     </section>
   );
 }

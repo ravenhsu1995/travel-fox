@@ -1,4 +1,12 @@
-export type Currency = "JPY" | "NTD" | "KRW" | "VND" | "USD" | "TWD" | "EUR";
+export type Currency =
+  | "TWD"
+  | "USD"
+  | "CNY"
+  | "NZD"
+  | "JPY"
+  | "EUR"
+  | "GBP"
+  | "CAD";
 
 export type TransportOption = {
   tool: string;
@@ -6,6 +14,8 @@ export type TransportOption = {
   to: string;
   duration?: string;
   cost?: string;
+  costAmount?: number;
+  costCurrency?: Currency;
   note?: string;
 };
 
@@ -14,12 +24,16 @@ export type MealBlock = {
   name: string;
   dishes?: string;
   cost?: string;
+  costAmount?: number;
+  costCurrency?: Currency;
 };
 
 export type ExperienceItem = {
   headline?: string;
   spot: string;
   cost?: string;
+  costAmount?: number;
+  costCurrency?: Currency;
   desc?: string;
 };
 
@@ -38,6 +52,8 @@ export type HotelInfo = {
   checkin?: string | null;
   checkout?: string | null;
   cost?: string;
+  costAmount?: number;
+  costCurrency?: Currency;
   mapQ?: string;
   nights?: number;
 };
