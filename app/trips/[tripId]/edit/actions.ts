@@ -37,7 +37,6 @@ export async function saveTrip(payload: SaveTripPayload) {
   if (error) return { ok: false, error: error.message } as const;
 
   revalidatePath(`/trips/${payload.id}`);
-  revalidatePath(`/trips/${payload.id}/edit`);
   revalidatePath("/trips");
   return { ok: true } as const;
 }
@@ -56,7 +55,6 @@ export async function saveDay(payload: SaveDayPayload) {
   if (error) return { ok: false, error: error.message } as const;
 
   revalidatePath(`/trips/${payload.trip_id}`);
-  revalidatePath(`/trips/${payload.trip_id}/edit`);
   return { ok: true } as const;
 }
 

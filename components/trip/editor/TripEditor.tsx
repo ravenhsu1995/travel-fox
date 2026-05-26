@@ -54,33 +54,41 @@ export default function TripEditor({
 
   function onTripSave() {
     startTripSave(async () => {
-      const r = await saveTrip({
-        id: trip.id,
-        title: trip.title,
-        subtitle: trip.subtitle,
-        cover_emoji: trip.cover_emoji,
-        start_date: trip.start_date,
-        end_date: trip.end_date,
-      });
-      if (r.ok) {
-        flash("ok", "行程資訊已儲存");
-        setShowTripForm(false);
-      } else flash("err", r.error);
+      try {
+        const r = await saveTrip({
+          id: trip.id,
+          title: trip.title,
+          subtitle: trip.subtitle,
+          cover_emoji: trip.cover_emoji,
+          start_date: trip.start_date,
+          end_date: trip.end_date,
+        });
+        if (r.ok) {
+          flash("ok", "行程資訊已儲存");
+          setShowTripForm(false);
+        } else flash("err", r.error);
+      } catch {
+        flash("err", "儲存失敗，請重試");
+      }
     });
   }
 
   function onDaySave() {
     if (!active) return;
     startDaySave(async () => {
-      const r = await saveDay({
-        id: active.id,
-        trip_id: trip.id,
-        theme: active.theme,
-        hotel: active.hotel,
-        timeline: active.timeline,
-      });
-      if (r.ok) flash("ok", "此日已儲存");
-      else flash("err", r.error);
+      try {
+        const r = await saveDay({
+          id: active.id,
+          trip_id: trip.id,
+          theme: active.theme,
+          hotel: active.hotel,
+          timeline: active.timeline,
+        });
+        if (r.ok) flash("ok", "此日已儲存");
+        else flash("err", r.error);
+      } catch {
+        flash("err", "儲存失敗，請重試");
+      }
     });
   }
 
