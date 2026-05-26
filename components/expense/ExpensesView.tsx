@@ -206,7 +206,7 @@ export default function ExpensesView({
       <form onSubmit={onSubmit} className="mb-5 space-y-2 rounded-xl bg-card p-4 shadow-sm">
         <div className="mb-1 text-sm font-bold text-navy">＋ 記錄額外花費</div>
         <div className="text-[11px] text-muted">
-          行程內的交通／餐飲／體驗／住宿花費會自動加入；這裡只記錄行程外的支出（購物、藥品等）。
+          行程內的花費會自動加入；這裡只記錄行程外的支出（例如：購物）。
         </div>
         <input
           value={desc}

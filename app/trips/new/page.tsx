@@ -155,7 +155,7 @@ export default function NewTripPage() {
           {pending ? "建立中…" : "建立行程"}
         </button>
         <p className="text-center text-xs text-muted">
-          建立後會自動為日期區間每天產生一個空白日，之後可逐天編輯內容。
+          建立後為日期區間每天產生一個空白日，可再逐天編輯內容。
         </p>
       </form>
     </main>
