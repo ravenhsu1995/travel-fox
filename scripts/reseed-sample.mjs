@@ -1,10 +1,22 @@
 // Reseed the public sample trip with updated content.
-// Run: node scripts/reseed-sample.mjs
+// Run: node --env-file=.env.local scripts/reseed-sample.mjs
+//
+// Requires .env.local with:
+//   NEXT_PUBLIC_SUPABASE_URL=https://YOUR_REF.supabase.co
+//   SUPABASE_SERVICE_ROLE_KEY=...  (from Supabase dashboard → Settings → API)
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://jfbmrdvtlswjnpjgawfh.supabase.co';
-const SERVICE_ROLE_KEY = '***REDACTED_SERVICE_ROLE_KEY***';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error(
+    'Missing env vars. Run with: node --env-file=.env.local scripts/reseed-sample.mjs\n' +
+      'Make sure .env.local has NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+  );
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
