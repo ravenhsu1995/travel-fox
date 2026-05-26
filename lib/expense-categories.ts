@@ -22,15 +22,18 @@ export function colorForCategory(category: string): string {
   return CATEGORY_COLOR[category] ?? "var(--color-muted)";
 }
 
+// Opaque, pre-blended against white card background (#ffffff) so SwipeableRow
+// hides the underlying action buttons. Equivalent to the source category color
+// at ~7–11% alpha, just baked.
 export const CATEGORY_TINT: Record<string, string> = {
-  "🚆 交通": "rgba(37, 112, 184, 0.08)",
-  "🏨 住宿": "rgba(28, 43, 82, 0.07)",
-  "🍽 餐飲": "rgba(232, 132, 58, 0.10)",
-  "✨ 體驗": "rgba(46, 120, 120, 0.09)",
-  "🛍 購物": "rgba(196, 144, 15, 0.11)",
-  "💊 其他": "rgba(112, 105, 96, 0.07)",
+  "🚆 交通": "#eef3f9",
+  "🏨 住宿": "#eff0f3",
+  "🍽 餐飲": "#fdf3eb",
+  "✨ 體驗": "#ecf3f3",
+  "🛍 購物": "#f9f3e5",
+  "💊 其他": "#f5f5f4",
 };
 
 export function tintForCategory(category: string): string {
-  return CATEGORY_TINT[category] ?? "var(--color-card-pure)";
+  return CATEGORY_TINT[category] ?? "#ffffff";
 }
