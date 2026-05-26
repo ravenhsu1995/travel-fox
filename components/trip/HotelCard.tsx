@@ -9,8 +9,8 @@ export default function HotelCard({ hotel }: { hotel: HotelInfo }) {
       </div>
       <div className="text-sm font-semibold text-ink">{hotel.name}</div>
       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-        {hotel.checkin && <span>Check-in {hotel.checkin}</span>}
-        {hotel.checkout && <span>Check-out {hotel.checkout}</span>}
+        {hotel.checkin && <span>{hotel.checkin}～</span>}
+        {hotel.checkout && <span>明早～{hotel.checkout}</span>}
       </div>
       {hotel.cost && (
         <div className="mt-1 text-xs text-ink-2">{hotel.cost}</div>

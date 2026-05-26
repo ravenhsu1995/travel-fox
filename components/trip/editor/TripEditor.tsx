@@ -401,7 +401,7 @@ function HotelEditor({
         />
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <div className="mb-1 text-[10px] font-semibold text-muted">Check-in</div>
+            <div className="mb-1 text-[10px] font-semibold text-muted">Check-in ～</div>
             <TimePicker
               value={hotel.checkin ?? null}
               onChange={(v) => onChange({ ...hotel, checkin: v })}
@@ -409,7 +409,7 @@ function HotelEditor({
             />
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold text-muted">Check-out</div>
+            <div className="mb-1 text-[10px] font-semibold text-muted">明早 ～ Check-out</div>
             <TimePicker
               value={hotel.checkout ?? null}
               onChange={(v) => onChange({ ...hotel, checkout: v })}
