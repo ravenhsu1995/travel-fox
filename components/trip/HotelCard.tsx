@@ -1,6 +1,7 @@
 import { googleMapUrl } from "@/lib/maps";
 import type { ResolvedHotel } from "@/lib/resolveDayHotel";
 import CostBadge from "./CostBadge";
+import MapButton from "./MapButton";
 
 export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
   const { hotel, phase } = resolved;
@@ -11,9 +12,11 @@ export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
   const showCheckout =
     (phase === "single" || phase === "checkout") && !!hotel.checkout;
   const showCost = phase !== "checkout" && !!hotel.cost;
+  const mapHref = googleMapUrl(hotel.mapQ || hotel.name);
 
   return (
-    <section className="rounded-xl bg-card p-4 shadow-sm">
+    <section className="relative rounded-xl bg-card p-4 pr-14 shadow-sm">
+      {(hotel.mapQ || hotel.name) && <MapButton href={mapHref} />}
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-bold text-navy">🏨 住宿</h3>
       </div>
@@ -29,16 +32,6 @@ export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
         </div>
       )}
       {showCost && <CostBadge value={hotel.cost!} />}
-      {(hotel.mapQ || hotel.name) && (
-        <a
-          href={googleMapUrl(hotel.mapQ || hotel.name)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-block text-xs font-semibold text-info hover:underline"
-        >
-          在 Google 地圖開啟 →
-        </a>
-      )}
     </section>
   );
 }

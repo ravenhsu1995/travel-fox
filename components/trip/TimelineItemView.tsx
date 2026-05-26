@@ -1,6 +1,7 @@
 import type { TimelineItem } from "@/lib/types";
 import { googleMapUrl } from "@/lib/maps";
 import CostBadge from "./CostBadge";
+import MapButton from "./MapButton";
 
 function transportEmoji(tool: string): string {
   if (tool === "飛機") return "✈️";
@@ -50,17 +51,10 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
       )}
 
       {item.type === "meal" && item.meal && (
-        <div className="rounded-md bg-gold-pale p-2.5 text-xs">
+        <div className="relative rounded-md bg-gold-pale p-2.5 pr-12 text-xs">
+          <MapButton href={googleMapUrl(item.meal.name)} />
           <div className="mb-1 flex items-center justify-between">
             <span className="font-bold text-gold">🍽 {item.meal.type}</span>
-            <a
-              href={googleMapUrl(item.meal.name)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-info hover:underline"
-            >
-              地圖 ↗
-            </a>
           </div>
           <div className="font-bold text-ink">{item.meal.name}</div>
           {item.meal.dishes && (
