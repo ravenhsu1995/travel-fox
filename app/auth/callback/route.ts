@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const redirect = searchParams.get("redirect") ?? "/trips";
 
   if (code) {
-    const supabase = await createClient();
+    const supabase = await createClient({ canSetCookies: true });
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       return NextResponse.redirect(`${origin}${redirect}`);

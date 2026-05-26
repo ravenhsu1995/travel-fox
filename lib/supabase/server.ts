@@ -1,7 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function createClient() {
+type CreateClientOptions = {
+  canSetCookies?: boolean;
+};
+
+export async function createClient(options: CreateClientOptions = {}) {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -19,7 +23,12 @@ export async function createClient() {
         // re-renders the current page and its layouts on the server so the
         // UI reflects the new cookie value"). That re-render can fail and
         // surface as "An error occurred in the Server Components render".
-        setAll() {},
+        setAll(cookiesToSet) {
+          if (!options.canSetCookies) return;
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          );
+        },
       },
     },
   );
