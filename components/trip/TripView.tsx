@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import type { Day, Trip } from "@/lib/types";
 import HotelCard from "./HotelCard";
@@ -30,10 +31,20 @@ export default function TripView({
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
-      <div className="bg-gradient-to-b from-navy to-navy-lt px-4 pt-4 pb-2 text-white">
-        <div className="flex items-baseline justify-between gap-3">
-          <div>
-            <h1 className="text-base font-extrabold tracking-wide">
+      <div className="relative overflow-hidden bg-gradient-to-b from-navy to-navy-lt px-4 pt-4 pb-2 text-white">
+        <Image
+          src="/mascot-trip-header.webp"
+          alt=""
+          width={213}
+          height={256}
+          sizes="100px"
+          priority
+          aria-hidden
+          className="pointer-events-none absolute right-1 top-1 h-[100px] w-auto select-none"
+        />
+        <div className="relative flex items-baseline justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-extrabold tracking-wide">
               {trip.cover_emoji} {trip.title}
             </h1>
             <p className="text-[11px] opacity-70">
@@ -44,14 +55,14 @@ export default function TripView({
           {showExpenseLink && (
             <Link
               href={`/trips/${trip.id}/expenses`}
-              className="rounded-full bg-gold px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
+              className="relative z-10 rounded-full bg-gold px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm"
             >
               💴 記帳
             </Link>
           )}
         </div>
 
-        <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-2">
+        <div className="no-scrollbar relative mt-3 flex gap-1.5 overflow-x-auto pb-2 pr-24">
           {sorted.map((d, i) => (
             <button
               key={d.id}
