@@ -75,11 +75,7 @@ export default function TimelineItemView({ item }: { item: TimelineItem }) {
 
       {item.type === "exp" && item.exp && (
         <div className="rounded-md border border-line bg-card-pure p-2.5 text-xs">
-          {item.exp.headline && (
-            <div className="text-[11px] font-semibold text-gold">
-              ✨ {item.exp.headline}
-            </div>
-          )}
+
           <div className="mt-0.5 font-bold text-ink">{item.exp.spot}</div>
           {item.exp.desc && (
             <div className="mt-0.5 text-muted">{item.exp.desc}</div>

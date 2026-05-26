@@ -663,11 +663,7 @@ function ExpEditor({
         value={value.spot}
         onChange={(v) => onChange({ ...value, spot: v })}
       />
-      <TextInput
-        placeholder="標語"
-        value={value.headline ?? ""}
-        onChange={(v) => onChange({ ...value, headline: v || undefined })}
-      />
+
       <TextArea
         placeholder="描述"
         value={value.desc ?? ""}
