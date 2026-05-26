@@ -12,11 +12,22 @@ export default function NewTripPage() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [emoji, setEmoji] = useState("🤷");
+  const [subtitleChips, setSubtitleChips] = useState<string[]>([]);
+  const [subtitleDraft, setSubtitleDraft] = useState("");
+  function addChip() {
+    const v = subtitleDraft.trim();
+    if (!v) return;
+    setSubtitleChips([...subtitleChips, v]);
+    setSubtitleDraft("");
+  }
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
     formData.set("cover_emoji", emoji);
+    const pending = subtitleDraft.trim();
+    const allChips = pending ? [...subtitleChips, pending] : subtitleChips;
+    formData.set("subtitle", allChips.join(" · "));
 
     startTransition(async () => {
       const result = await createTrip(formData);
@@ -67,11 +78,48 @@ export default function NewTripPage() {
         </Field>
 
         <Field label="副標題（可選）">
-          <input
-            name="subtitle"
-            placeholder="例：神戶 · 鳥取 · 岡山"
-            className="h-12 w-full rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
-          />
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {subtitleChips.map((c, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 rounded-full bg-gold-pale px-2.5 py-0.5 text-xs font-semibold text-ink"
+                >
+                  {c}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSubtitleChips(subtitleChips.filter((_, j) => j !== i))
+                    }
+                    className="text-muted hover:text-danger"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={subtitleDraft}
+                onChange={(e) => setSubtitleDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addChip();
+                  }
+                }}
+                placeholder="城市或國家，輸入後按 +"
+                className="h-12 flex-1 rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
+              />
+              <button
+                type="button"
+                onClick={addChip}
+                className="h-12 rounded-lg bg-card-pure px-4 text-sm font-semibold text-ink hover:bg-card"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
