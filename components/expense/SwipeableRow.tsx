@@ -20,6 +20,9 @@ export type SwipeAction = {
 
 const ACTION_WIDTH = 88;
 
+// During an active drag we mutate the DOM transform directly via a ref to
+// avoid re-rendering on every pointermove. React state is only used for the
+// final open/closed snap so the parent can manage outside-click dismissal.
 export default function SwipeableRow({
   actions,
   className = "",
@@ -30,8 +33,9 @@ export default function SwipeableRow({
   children: ReactNode;
 }) {
   const totalReveal = ACTION_WIDTH * actions.length;
-  const [offset, setOffset] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  const [open, setOpen] = useState(false);
+  const slideRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
 
   const startRef = useRef<{
     x: number;
@@ -41,26 +45,40 @@ export default function SwipeableRow({
     pointerId: number;
   } | null>(null);
 
-  const close = useCallback(() => setOffset(0), []);
+  const setTransform = useCallback((px: number, animate: boolean) => {
+    const el = slideRef.current;
+    if (!el) return;
+    el.style.transition = animate ? "transform 180ms ease-out" : "none";
+    el.style.transform = `translate3d(${px}px, 0, 0)`;
+    offsetRef.current = px;
+  }, []);
 
-  // Close on any outside tap so only one row is open at a time.
+  const snapTo = useCallback(
+    (target: number) => {
+      setTransform(target, true);
+      setOpen(target !== 0);
+    },
+    [setTransform],
+  );
+
+  const close = useCallback(() => snapTo(0), [snapTo]);
+
   useEffect(() => {
-    if (offset === 0) return;
+    if (!open) return;
     const onDocPointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target?.closest("[data-swipe-row='open']")) close();
     };
     document.addEventListener("pointerdown", onDocPointerDown, true);
     return () => document.removeEventListener("pointerdown", onDocPointerDown, true);
-  }, [offset, close]);
+  }, [open, close]);
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
-    // Ignore non-primary buttons (e.g. right click).
     if (e.pointerType === "mouse" && e.button !== 0) return;
     startRef.current = {
       x: e.clientX,
       y: e.clientY,
-      base: offset,
+      base: offsetRef.current,
       decided: null,
       pointerId: e.pointerId,
     };
@@ -76,7 +94,6 @@ export default function SwipeableRow({
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
       if (Math.abs(dx) > Math.abs(dy)) {
         s.decided = "h";
-        setDragging(true);
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       } else {
         s.decided = "v";
@@ -86,7 +103,7 @@ export default function SwipeableRow({
 
     if (s.decided === "h") {
       const next = Math.min(0, Math.max(-totalReveal, s.base + dx));
-      setOffset(next);
+      setTransform(next, false);
     }
   }
 
@@ -95,9 +112,8 @@ export default function SwipeableRow({
     startRef.current = null;
     if (!s) return;
     if (s.decided === "h") {
-      setDragging(false);
-      const shouldOpen = -offset > totalReveal / 2;
-      setOffset(shouldOpen ? -totalReveal : 0);
+      const shouldOpen = -offsetRef.current > totalReveal / 2;
+      snapTo(shouldOpen ? -totalReveal : 0);
       try {
         (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
       } catch {
@@ -106,11 +122,9 @@ export default function SwipeableRow({
     }
   }
 
-  const isOpen = offset !== 0;
-
   return (
     <div
-      data-swipe-row={isOpen ? "open" : "closed"}
+      data-swipe-row={open ? "open" : "closed"}
       className={`relative overflow-hidden ${className}`}
       style={{ touchAction: "pan-y" }}
     >
@@ -125,20 +139,21 @@ export default function SwipeableRow({
             }}
             className={`pointer-events-auto flex h-full items-center justify-center text-xs font-semibold ${a.bg} ${a.text ?? "text-white"}`}
             style={{ width: ACTION_WIDTH }}
-            tabIndex={isOpen ? 0 : -1}
+            tabIndex={open ? 0 : -1}
           >
             {a.label}
           </button>
         ))}
       </div>
       <div
+        ref={slideRef}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
         onPointerCancel={onPointerEnd}
         style={{
-          transform: `translateX(${offset}px)`,
-          transition: dragging ? "none" : "transform 180ms ease-out",
+          transform: "translate3d(0,0,0)",
+          willChange: "transform",
         }}
       >
         {children}

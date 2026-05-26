@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Currency, Day, Expense, Trip } from "@/lib/types";
@@ -82,6 +82,11 @@ export default function ExpensesView({
   const [date, setDate] = useState(dates[1] ?? "行前");
   const [error, setError] = useState<string | null>(null);
 
+  // Local mirror of expenses so swipe actions (delete / exclude) reflect
+  // instantly in the UI without waiting for a server roundtrip + revalidate.
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  useEffect(() => setExpenses(initialExpenses), [initialExpenses]);
+
   function reset() {
     setDesc("");
     setAmount("");
@@ -113,18 +118,32 @@ export default function ExpensesView({
 
   function onDelete(id: string) {
     if (!confirm("刪除這筆？")) return;
+    const snapshot = expenses;
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
     startTransition(async () => {
       const r = await deleteExpense(id);
-      if (!r.ok) setError(r.error);
-      else router.refresh();
+      if (!r.ok) {
+        setError(r.error);
+        setExpenses(snapshot);
+      } else {
+        router.refresh();
+      }
     });
   }
 
   function onToggleExcluded(id: string, next: boolean) {
+    const snapshot = expenses;
+    setExpenses((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, excluded: next } : e)),
+    );
     startTransition(async () => {
       const r = await setExpenseExcluded(id, next);
-      if (!r.ok) setError(r.error);
-      else router.refresh();
+      if (!r.ok) {
+        setError(r.error);
+        setExpenses(snapshot);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -134,8 +153,8 @@ export default function ExpensesView({
   );
 
   const merged: MergedExpense[] = useMemo(
-    () => [...derived, ...initialExpenses.map(manualFromExpense)],
-    [derived, initialExpenses],
+    () => [...derived, ...expenses.map(manualFromExpense)],
+    [derived, expenses],
   );
 
   const availableCurrencies = useMemo<Currency[]>(() => {
