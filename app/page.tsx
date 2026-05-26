@@ -195,7 +195,7 @@ export default async function Home() {
               <path d="M12 14c0-2-1.5-4-4-4 0 3 1.5 4 4 4Z" />
             </svg>
           )}
-          {isAuthed ? "前往我的行程" : "註冊建立自己的行程"}
+          {isAuthed ? "前往我的行程" : "建立自己的行程"}
         </Link>
       </section>
     </main>
