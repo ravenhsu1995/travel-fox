@@ -1,14 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getAccessToken, pgrest } from "@/lib/supabase/rest";
 import type { Day, HotelInfo, TimelineItem, Trip } from "@/lib/types";
 
-// NOTE: revalidatePath() is intentionally NOT called inside saveTrip / saveDay.
-// Both are invoked from startTransition; revalidatePath causes Next.js to
-// re-render Server Components mid-transition, which throws and crashes the page.
-// All pages in this app are dynamic (ƒ) so they are already fetched fresh on
-// every navigation — the Router Cache is not involved.
+// NOTE: All mutations here use direct PostgREST fetch (via @/lib/supabase/rest)
+// instead of the @supabase/ssr SDK. Going through the SDK can trigger
+// cookies().set() during auth refresh, which Next.js treats as "the action
+// mutated state" and tries to re-render the current page in the action
+// response — that re-render has been the source of repeated
+// "An error occurred in the Server Components render" failures.
 
 type SaveTripPayload = {
   id: string;
@@ -29,19 +29,22 @@ type SaveDayPayload = {
 
 export async function saveTrip(payload: SaveTripPayload) {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("trips")
-      .update({
+    const jwt = await getAccessToken();
+    if (!jwt) return { ok: false, error: "未登入" } as const;
+
+    const result = await pgrest({
+      method: "PATCH",
+      path: `/rest/v1/trips?id=eq.${payload.id}`,
+      jwt,
+      body: {
         title: payload.title,
         subtitle: payload.subtitle,
         cover_emoji: payload.cover_emoji,
         start_date: payload.start_date,
         end_date: payload.end_date,
-      })
-      .eq("id", payload.id);
-
-    if (error) return { ok: false, error: error.message } as const;
+      },
+    });
+    if (!result.ok) return { ok: false, error: result.error } as const;
     return { ok: true } as const;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -51,17 +54,20 @@ export async function saveTrip(payload: SaveTripPayload) {
 
 export async function saveDay(payload: SaveDayPayload) {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("days")
-      .update({
+    const jwt = await getAccessToken();
+    if (!jwt) return { ok: false, error: "未登入" } as const;
+
+    const result = await pgrest({
+      method: "PATCH",
+      path: `/rest/v1/days?id=eq.${payload.id}`,
+      jwt,
+      body: {
         theme: payload.theme,
         hotel: payload.hotel,
         timeline: payload.timeline,
-      })
-      .eq("id", payload.id);
-
-    if (error) return { ok: false, error: error.message } as const;
+      },
+    });
+    if (!result.ok) return { ok: false, error: result.error } as const;
     return { ok: true } as const;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -70,11 +76,21 @@ export async function saveDay(payload: SaveDayPayload) {
 }
 
 export async function deleteTrip(tripId: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("trips").delete().eq("id", tripId);
-  if (error) return { ok: false, error: error.message } as const;
-  revalidatePath("/trips");
-  return { ok: true } as const;
+  try {
+    const jwt = await getAccessToken();
+    if (!jwt) return { ok: false, error: "未登入" } as const;
+
+    const result = await pgrest({
+      method: "DELETE",
+      path: `/rest/v1/trips?id=eq.${tripId}`,
+      jwt,
+    });
+    if (!result.ok) return { ok: false, error: result.error } as const;
+    return { ok: true } as const;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg } as const;
+  }
 }
 
 export async function addDay(
@@ -83,18 +99,20 @@ export async function addDay(
   relativeToDayId: string,
 ) {
   try {
-    const supabase = await createClient();
+    const jwt = await getAccessToken();
+    if (!jwt) return { ok: false as const, error: "未登入" };
 
     // Fetch all days to determine sort_orders and dates
-    const { data: allDays, error: e1 } = await supabase
-      .from("days")
-      .select("id, date, sort_order")
-      .eq("trip_id", tripId)
-      .order("sort_order");
-    if (e1) return { ok: false as const, error: e1.message };
+    const fetchResult = await pgrest<Array<{ id: string; date: string; sort_order: number }>>({
+      method: "GET",
+      path: `/rest/v1/days?select=id,date,sort_order&trip_id=eq.${tripId}&order=sort_order`,
+      jwt,
+    });
+    if (!fetchResult.ok) return { ok: false as const, error: fetchResult.error };
+    const allDays = fetchResult.data ?? [];
 
-    const refDay = (allDays ?? []).find((d) => d.id === relativeToDayId);
-    if (!refDay && (allDays ?? []).length > 0)
+    const refDay = allDays.find((d) => d.id === relativeToDayId);
+    if (!refDay && allDays.length > 0)
       return { ok: false as const, error: "找不到參考日" };
 
     // Calculate new date using local-time parts to avoid UTC-offset issues
@@ -108,37 +126,39 @@ export async function addDay(
     const dy = String(newDate.getDate()).padStart(2, "0");
     const newDateStr = `${yr}-${mo}-${dy}`;
 
-    // Check uniqueness
-    if ((allDays ?? []).some((d) => d.date === newDateStr))
+    if (allDays.some((d) => d.date === newDateStr))
       return { ok: false as const, error: `${newDateStr} 已存在，無法重複新增` };
 
-    // Determine new sort_order and shift existing days
     const newSortOrder =
       position === "after"
         ? (refDay?.sort_order ?? -1) + 1
         : (refDay?.sort_order ?? 0);
 
-    const toShift = (allDays ?? []).filter((d) =>
+    const toShift = allDays.filter((d) =>
       position === "after"
         ? d.sort_order > (refDay?.sort_order ?? -1)
         : d.sort_order >= (refDay?.sort_order ?? 0),
     );
     for (const d of toShift) {
-      await supabase
-        .from("days")
-        .update({ sort_order: d.sort_order + 1 })
-        .eq("id", d.id);
+      const shiftResult = await pgrest({
+        method: "PATCH",
+        path: `/rest/v1/days?id=eq.${d.id}`,
+        jwt,
+        body: { sort_order: d.sort_order + 1 },
+      });
+      if (!shiftResult.ok)
+        return { ok: false as const, error: shiftResult.error };
     }
 
-    // Build day label
     const weekday = ["日", "一", "二", "三", "四", "五", "六"][newDate.getDay()];
     const dayLabel = `${newDate.getMonth() + 1}/${newDate.getDate()} (${weekday})`;
 
-    // Insert and return only the generated id — build the Day object locally
-    // to avoid serialisation issues with extra DB columns (e.g. risks text[]).
-    const { data: row, error: e2 } = await supabase
-      .from("days")
-      .insert({
+    const insertResult = await pgrest<Array<{ id: string }>>({
+      method: "POST",
+      path: `/rest/v1/days?select=id`,
+      jwt,
+      returnRow: true,
+      body: {
         trip_id: tripId,
         date: newDateStr,
         day_label: dayLabel,
@@ -146,13 +166,17 @@ export async function addDay(
         hotel: null,
         timeline: [],
         sort_order: newSortOrder,
-      })
-      .select("id")
-      .single();
-    if (e2) return { ok: false as const, error: e2.message };
+      },
+    });
+    if (!insertResult.ok)
+      return { ok: false as const, error: insertResult.error };
+
+    const insertedId = insertResult.data?.[0]?.id;
+    if (!insertedId)
+      return { ok: false as const, error: "新增成功但無法取得 ID" };
 
     const newDay: Day = {
-      id: row.id,
+      id: insertedId,
       trip_id: tripId,
       date: newDateStr,
       day_label: dayLabel,
@@ -162,7 +186,6 @@ export async function addDay(
       sort_order: newSortOrder,
     };
 
-    revalidatePath(`/trips/${tripId}`);
     return { ok: true as const, day: newDay };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -171,11 +194,23 @@ export async function addDay(
 }
 
 export async function deleteDay(dayId: string, tripId: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("days").delete().eq("id", dayId);
-  if (error) return { ok: false, error: error.message } as const;
-  revalidatePath(`/trips/${tripId}`);
-  return { ok: true } as const;
+  try {
+    const jwt = await getAccessToken();
+    if (!jwt) return { ok: false, error: "未登入" } as const;
+
+    const result = await pgrest({
+      method: "DELETE",
+      path: `/rest/v1/days?id=eq.${dayId}`,
+      jwt,
+    });
+    if (!result.ok) return { ok: false, error: result.error } as const;
+    // tripId is unused now but kept for API compatibility with callers
+    void tripId;
+    return { ok: true } as const;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg } as const;
+  }
 }
 
 export type { SaveTripPayload, SaveDayPayload, Trip, Day };
