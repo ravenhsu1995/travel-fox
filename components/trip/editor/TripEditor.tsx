@@ -178,6 +178,14 @@ export default function TripEditor({
 
         {!showTripForm && (
           <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-2">
+            {addingDay && firstDay && (
+              <button
+                onClick={() => onAddDay("before")}
+                className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
+              >
+                ← {dateLabel(firstDay.date, -1)}
+              </button>
+            )}
             {days.map((d) => (
               <button
                 key={d.id}
@@ -193,18 +201,14 @@ export default function TripEditor({
             ))}
             {addingDay ? (
               <>
-                <button
-                  onClick={() => onAddDay("before")}
-                  className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
-                >
-                  ← {firstDay ? dateLabel(firstDay.date, -1) : "前一天"}
-                </button>
-                <button
-                  onClick={() => onAddDay("after")}
-                  className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
-                >
-                  {lastDay ? dateLabel(lastDay.date, 1) : "後一天"} →
-                </button>
+                {lastDay && (
+                  <button
+                    onClick={() => onAddDay("after")}
+                    className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
+                  >
+                    {dateLabel(lastDay.date, 1)} →
+                  </button>
+                )}
                 <button
                   onClick={() => setAddingDay(false)}
                   className="flex-shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/50 hover:bg-white/10"
