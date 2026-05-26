@@ -12,16 +12,14 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
-          } catch {
-            // Called from a Server Component — cookie writes can't happen here.
-            // The proxy (middleware) refreshes the session, so this is safe to ignore.
-          }
-        },
+        // No-op: session/cookie refresh is handled by the proxy (middleware).
+        // Writing cookies here from a Server Action triggers Next.js to
+        // auto-re-render the current page and layouts (Next.js 16 docs:
+        // "When you set or delete a cookie in a Server Action, Next.js
+        // re-renders the current page and its layouts on the server so the
+        // UI reflects the new cookie value"). That re-render can fail and
+        // surface as "An error occurred in the Server Components render".
+        setAll() {},
       },
     },
   );
