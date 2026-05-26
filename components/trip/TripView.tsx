@@ -74,17 +74,19 @@ export default function TripView({
       {active && (
         <div className="space-y-4 px-4 py-5">
           <section className="relative overflow-hidden rounded-xl bg-card p-4 shadow-sm">
-            <Image
-              key={mascotIndex}
-              src={`/mascot-trip-${mascotIndex}.webp`}
-              alt=""
-              width={256}
-              height={256}
-              sizes="80px"
-              priority
-              aria-hidden
-              className="pointer-events-none absolute right-6 top-1/2 h-[48px] w-auto -translate-y-1/2 select-none"
-            />
+            {active.theme && (
+              <Image
+                key={mascotIndex}
+                src={`/mascot-trip-${mascotIndex}.webp`}
+                alt=""
+                width={256}
+                height={256}
+                sizes="80px"
+                priority
+                aria-hidden
+                className="pointer-events-none absolute right-6 top-1/2 h-[48px] w-auto -translate-y-1/2 select-none"
+              />
+            )}
             <div className="relative flex items-center justify-between pr-20">
               <div className="text-xs font-semibold text-muted">
                 {active.day_label}
