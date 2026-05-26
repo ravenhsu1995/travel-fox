@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Day, HotelInfo, TimelineItem, Trip } from "@/lib/types";
 
+// NOTE: revalidatePath() is intentionally NOT called inside saveTrip / saveDay.
+// Both are invoked from startTransition; revalidatePath causes Next.js to
+// re-render Server Components mid-transition, which throws and crashes the page.
+// All pages in this app are dynamic (ƒ) so they are already fetched fresh on
+// every navigation — the Router Cache is not involved.
+
 type SaveTripPayload = {
   id: string;
   title: string;
@@ -22,40 +28,45 @@ type SaveDayPayload = {
 };
 
 export async function saveTrip(payload: SaveTripPayload) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("trips")
-    .update({
-      title: payload.title,
-      subtitle: payload.subtitle,
-      cover_emoji: payload.cover_emoji,
-      start_date: payload.start_date,
-      end_date: payload.end_date,
-    })
-    .eq("id", payload.id);
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("trips")
+      .update({
+        title: payload.title,
+        subtitle: payload.subtitle,
+        cover_emoji: payload.cover_emoji,
+        start_date: payload.start_date,
+        end_date: payload.end_date,
+      })
+      .eq("id", payload.id);
 
-  if (error) return { ok: false, error: error.message } as const;
-
-  revalidatePath(`/trips/${payload.id}`);
-  revalidatePath("/trips");
-  return { ok: true } as const;
+    if (error) return { ok: false, error: error.message } as const;
+    return { ok: true } as const;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg } as const;
+  }
 }
 
 export async function saveDay(payload: SaveDayPayload) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("days")
-    .update({
-      theme: payload.theme,
-      hotel: payload.hotel,
-      timeline: payload.timeline,
-    })
-    .eq("id", payload.id);
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("days")
+      .update({
+        theme: payload.theme,
+        hotel: payload.hotel,
+        timeline: payload.timeline,
+      })
+      .eq("id", payload.id);
 
-  if (error) return { ok: false, error: error.message } as const;
-
-  revalidatePath(`/trips/${payload.trip_id}`);
-  return { ok: true } as const;
+    if (error) return { ok: false, error: error.message } as const;
+    return { ok: true } as const;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg } as const;
+  }
 }
 
 export async function deleteTrip(tripId: string) {
