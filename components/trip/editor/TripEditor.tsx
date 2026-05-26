@@ -951,7 +951,7 @@ function CostFieldEditor({
           <option value="">幣別</option>
           {CURRENCIES.map((c) => (
             <option key={c} value={c}>
-              {CURRENCY_SYMBOL[c]} {c} · {CURRENCY_LABEL[c]}
+              {CURRENCY_SYMBOL[c]} {c} {CURRENCY_LABEL[c]}
             </option>
           ))}
         </select>
