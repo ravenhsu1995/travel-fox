@@ -662,11 +662,14 @@ function TransportEditor({
             onChange={(v) => onChange({ ...value, duration: v })}
           />
         </div>
-        <TextInput
-          placeholder="費用"
-          value={value.cost ?? ""}
-          onChange={(v) => onChange({ ...value, cost: v || undefined })}
-        />
+        <div>
+          <div className="mb-1 text-[10px] font-semibold text-muted">費用</div>
+          <TextInput
+            placeholder="費用"
+            value={value.cost ?? ""}
+            onChange={(v) => onChange({ ...value, cost: v || undefined })}
+          />
+        </div>
       </div>
       <TextArea
         placeholder="備註（服務／路線名稱）"
