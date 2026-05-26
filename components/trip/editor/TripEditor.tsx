@@ -281,7 +281,10 @@ export default function TripEditor({
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
-      <div className="sticky top-14 z-20 bg-gradient-to-b from-navy to-navy-lt px-4 pt-3 pb-2 text-white">
+      <div
+        className="sticky top-0 z-50 bg-gradient-to-b from-navy to-navy-lt px-4 pb-2 text-white shadow-md"
+        style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+      >
         <div className="flex items-center justify-between">
           <Link
             href={`/trips/${trip.id}`}
@@ -360,7 +363,7 @@ export default function TripEditor({
 
       {msg && (
         <div
-          className={`sticky top-[148px] z-10 mx-auto mt-2 w-full max-w-[420px] rounded-md px-3 py-2 text-sm shadow-md ${
+          className={`sticky top-[148px] z-40 mx-auto mt-2 w-full max-w-[420px] rounded-md px-3 py-2 text-sm shadow-md ${
             msg.kind === "ok"
               ? "bg-success/10 text-success"
               : "bg-danger/10 text-danger"
