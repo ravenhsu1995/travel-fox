@@ -32,7 +32,7 @@ export default function NewTripPage() {
     startTransition(async () => {
       const result = await createTrip(formData);
       if (!result.ok) setError(result.error);
-      else router.push(`/trips/${result.tripId}`);
+      else router.push("/trips");
     });
   }
 
