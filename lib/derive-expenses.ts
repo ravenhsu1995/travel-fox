@@ -9,7 +9,10 @@ export type DerivedExpense = {
   description: string;
   date: string;
   sourceDayId: string;
+  /** null for hotel-type (which lives outside the timeline array). */
+  sourceIndex: number | null;
   itemType: "transport" | "meal" | "exp" | "hotel";
+  excluded: boolean;
   legacy?: string;
 };
 
@@ -78,7 +81,9 @@ export function deriveExpensesFromTrip(days: Day[]): DeriveResult {
           description: h.name || "住宿",
           date: day.date,
           sourceDayId: day.id,
+          sourceIndex: null,
           itemType: "hotel",
+          excluded: h.excluded ?? false,
         });
       } else if (h.cost) {
         legacy.push({
@@ -108,7 +113,9 @@ export function deriveExpensesFromTrip(days: Day[]): DeriveResult {
             description: transportDescription(t),
             date: day.date,
             sourceDayId: day.id,
+            sourceIndex: i,
             itemType: "transport",
+            excluded: it.excluded ?? false,
           });
         } else if (t.cost) {
           legacy.push({
@@ -135,7 +142,9 @@ export function deriveExpensesFromTrip(days: Day[]): DeriveResult {
             description: desc,
             date: day.date,
             sourceDayId: day.id,
+            sourceIndex: i,
             itemType: "meal",
+            excluded: it.excluded ?? false,
           });
         } else if (m.cost) {
           legacy.push({
@@ -162,7 +171,9 @@ export function deriveExpensesFromTrip(days: Day[]): DeriveResult {
             description: desc,
             date: day.date,
             sourceDayId: day.id,
+            sourceIndex: i,
             itemType: "exp",
+            excluded: it.excluded ?? false,
           });
         } else if (e.cost) {
           legacy.push({

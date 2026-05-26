@@ -45,6 +45,7 @@ export type TimelineItem = {
   transport?: TransportOption;
   meal?: MealBlock;
   exp?: ExperienceItem;
+  excluded?: boolean;
 };
 
 export type HotelInfo = {
@@ -56,6 +57,7 @@ export type HotelInfo = {
   costCurrency?: Currency;
   mapQ?: string;
   nights?: number;
+  excluded?: boolean;
 };
 
 export type Trip = {

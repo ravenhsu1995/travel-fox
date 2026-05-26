@@ -22,7 +22,9 @@ import {
 import {
   addExpense,
   deleteExpense,
+  setDerivedExcluded,
   setExpenseExcluded,
+  type DerivedExclusionTarget,
 } from "@/app/trips/[tripId]/expenses/actions";
 import SwipeableRow from "./SwipeableRow";
 
@@ -87,6 +89,13 @@ export default function ExpensesView({
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   useEffect(() => setExpenses(initialExpenses), [initialExpenses]);
 
+  // Optimistic overrides for derived rows (keyed by DerivedExpense.key).
+  // Cleared whenever fresh days arrive from the server.
+  const [derivedOverrides, setDerivedOverrides] = useState<
+    Record<string, boolean>
+  >({});
+  useEffect(() => setDerivedOverrides({}), [days]);
+
   function reset() {
     setDesc("");
     setAmount("");
@@ -147,15 +156,39 @@ export default function ExpensesView({
     });
   }
 
+  function onToggleDerivedExcluded(
+    key: string,
+    target: DerivedExclusionTarget,
+    next: boolean,
+  ) {
+    setDerivedOverrides((prev) => ({ ...prev, [key]: next }));
+    startTransition(async () => {
+      const r = await setDerivedExcluded(target, next);
+      if (!r.ok) {
+        setError(r.error);
+        setDerivedOverrides((prev) => {
+          const { [key]: _drop, ...rest } = prev;
+          return rest;
+        });
+      } else {
+        router.refresh();
+      }
+    });
+  }
+
   const { derived, legacy } = useMemo(
     () => deriveExpensesFromTrip(days),
     [days],
   );
 
-  const merged: MergedExpense[] = useMemo(
-    () => [...derived, ...expenses.map(manualFromExpense)],
-    [derived, expenses],
-  );
+  const merged: MergedExpense[] = useMemo(() => {
+    const enriched = derived.map((d) =>
+      d.key in derivedOverrides
+        ? { ...d, excluded: derivedOverrides[d.key] }
+        : d,
+    );
+    return [...enriched, ...expenses.map(manualFromExpense)];
+  }, [derived, expenses, derivedOverrides]);
 
   const availableCurrencies = useMemo<Currency[]>(() => {
     const used = new Set<Currency>(uniqueCurrenciesUsed(merged));
@@ -183,7 +216,7 @@ export default function ExpensesView({
   const grandTotal = useMemo(
     () =>
       merged.reduce((sum, e) => {
-        if (e.kind === "manual" && e.excluded) return sum;
+        if (e.excluded) return sum;
         return (
           sum + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates)
         );
@@ -312,7 +345,7 @@ export default function ExpensesView({
         <div className="space-y-4">
           {byDate.map(([d, items]) => {
             const dayTotal = items.reduce((s, e) => {
-              if (e.kind === "manual" && e.excluded) return s;
+              if (e.excluded) return s;
               return (
                 s + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates)
               );
@@ -335,6 +368,7 @@ export default function ExpensesView({
                       tripId={trip.id}
                       onDelete={onDelete}
                       onToggleExcluded={onToggleExcluded}
+                      onToggleDerivedExcluded={onToggleDerivedExcluded}
                     />
                   ))}
                 </ul>
@@ -358,6 +392,7 @@ function ExpenseRow({
   tripId,
   onDelete,
   onToggleExcluded,
+  onToggleDerivedExcluded,
 }: {
   row: MergedExpense;
   displayCurrency: Currency;
@@ -365,6 +400,11 @@ function ExpenseRow({
   tripId: string;
   onDelete: (id: string) => void;
   onToggleExcluded: (id: string, next: boolean) => void;
+  onToggleDerivedExcluded: (
+    key: string,
+    target: DerivedExclusionTarget,
+    next: boolean,
+  ) => void;
 }) {
   const converted = convertCurrency(
     row.amount,
@@ -373,7 +413,7 @@ function ExpenseRow({
     rates.rates,
   );
   const wasConverted = row.currency !== displayCurrency;
-  const isExcluded = row.kind === "manual" && row.excluded;
+  const isExcluded = row.excluded;
 
   const sharedClass =
     "flex items-center gap-3 rounded-lg bg-card-pure p-3 shadow-xs";
@@ -419,14 +459,30 @@ function ExpenseRow({
   );
 
   if (row.kind === "derived") {
+    const target: DerivedExclusionTarget =
+      row.sourceIndex === null
+        ? { kind: "hotel", dayId: row.sourceDayId }
+        : { kind: "timeline", dayId: row.sourceDayId, index: row.sourceIndex };
     return (
       <li>
-        <Link
-          href={`/trips/${tripId}/edit?day=${row.sourceDayId}`}
-          className={`${sharedClass} hover:bg-bg-2`}
+        <SwipeableRow
+          className="rounded-lg"
+          actions={[
+            {
+              label: row.excluded ? "計入" : "不列入計算",
+              bg: "bg-warning",
+              onClick: () =>
+                onToggleDerivedExcluded(row.key, target, !row.excluded),
+            },
+          ]}
         >
-          {inner}
-        </Link>
+          <Link
+            href={`/trips/${tripId}/edit?day=${row.sourceDayId}`}
+            className={`${sharedClass} hover:bg-bg-2`}
+          >
+            {inner}
+          </Link>
+        </SwipeableRow>
       </li>
     );
   }

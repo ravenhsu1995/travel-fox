@@ -151,6 +151,13 @@ export default function SwipeableRow({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
         onPointerCancel={onPointerEnd}
+        onClickCapture={(e) => {
+          if (open) {
+            e.preventDefault();
+            e.stopPropagation();
+            close();
+          }
+        }}
         style={{
           transform: "translate3d(0,0,0)",
           willChange: "transform",
