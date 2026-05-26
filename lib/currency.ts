@@ -23,14 +23,14 @@ export const CURRENCY_LABEL: Record<Currency, string> = {
 };
 
 export const CURRENCY_SYMBOL: Record<Currency, string> = {
-  TWD: "NT$",
+  TWD: "$",
   USD: "$",
-  CNY: "CN¥",
-  NZD: "NZ$",
-  JPY: "JP¥",
+  CNY: "¥",
+  NZD: "$",
+  JPY: "¥",
   EUR: "€",
   GBP: "£",
-  CAD: "CA$",
+  CAD: "$",
 };
 
 // Offline fallback rates (1 unit of currency → TWD). Used only when both the
