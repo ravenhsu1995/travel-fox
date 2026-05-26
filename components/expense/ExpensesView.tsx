@@ -137,7 +137,7 @@ export default function ExpensesView({
 
   const [displayCurrency, setDisplayCurrency] = useState<Currency>("TWD");
 
-  // Convert + sort by date desc.
+  // Group expenses with "行前" first, then trip dates in chronological order.
   const byDate = useMemo(() => {
     const m = new Map<string, MergedExpense[]>();
     for (const e of merged) {
@@ -145,9 +145,9 @@ export default function ExpensesView({
       arr.push(e);
       m.set(e.date, arr);
     }
-    const order = (d: string) => (d === "行前" ? "0000-00-00" : d);
+    const order = (d: string) => (d === "行前" ? "" : d);
     return Array.from(m.entries()).sort((a, b) =>
-      order(b[0]).localeCompare(order(a[0])),
+      order(a[0]).localeCompare(order(b[0])),
     );
   }, [merged]);
 
