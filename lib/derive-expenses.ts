@@ -22,6 +22,7 @@ export type ManualExpense = {
   description: string;
   date: string;
   expenseId: string;
+  excluded: boolean;
 };
 
 export type MergedExpense = DerivedExpense | ManualExpense;
@@ -190,6 +191,7 @@ export function manualFromExpense(e: Expense): ManualExpense {
     description: e.description,
     date: e.date,
     expenseId: e.id,
+    excluded: e.excluded ?? false,
   };
 }
 

@@ -89,5 +89,6 @@ export type Expense = {
   currency: Currency;
   category: string;
   date: string;
+  excluded: boolean;
   created_at: string;
 };

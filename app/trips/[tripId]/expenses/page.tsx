@@ -28,7 +28,7 @@ export default async function ExpensesPage({
       .order("sort_order", { ascending: true }),
     supabase
       .from("expenses")
-      .select("id, trip_id, description, amount, currency, category, date, created_at")
+      .select("id, trip_id, description, amount, currency, category, date, excluded, created_at")
       .eq("trip_id", tripId)
       .order("created_at", { ascending: false }),
     getExchangeRates(),

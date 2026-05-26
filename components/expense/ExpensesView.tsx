@@ -22,7 +22,9 @@ import {
 import {
   addExpense,
   deleteExpense,
+  setExpenseExcluded,
 } from "@/app/trips/[tripId]/expenses/actions";
+import SwipeableRow from "./SwipeableRow";
 
 const CATEGORIES = [
   "🚆 交通",
@@ -118,6 +120,14 @@ export default function ExpensesView({
     });
   }
 
+  function onToggleExcluded(id: string, next: boolean) {
+    startTransition(async () => {
+      const r = await setExpenseExcluded(id, next);
+      if (!r.ok) setError(r.error);
+      else router.refresh();
+    });
+  }
+
   const { derived, legacy } = useMemo(
     () => deriveExpensesFromTrip(days),
     [days],
@@ -153,11 +163,12 @@ export default function ExpensesView({
 
   const grandTotal = useMemo(
     () =>
-      merged.reduce(
-        (sum, e) =>
-          sum + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates),
-        0,
-      ),
+      merged.reduce((sum, e) => {
+        if (e.kind === "manual" && e.excluded) return sum;
+        return (
+          sum + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates)
+        );
+      }, 0),
     [merged, displayCurrency, rates.rates],
   );
 
@@ -281,11 +292,12 @@ export default function ExpensesView({
       ) : (
         <div className="space-y-4">
           {byDate.map(([d, items]) => {
-            const dayTotal = items.reduce(
-              (s, e) =>
-                s + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates),
-              0,
-            );
+            const dayTotal = items.reduce((s, e) => {
+              if (e.kind === "manual" && e.excluded) return s;
+              return (
+                s + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates)
+              );
+            }, 0);
             return (
               <section key={d}>
                 <header className="mb-1.5 flex items-center justify-between text-xs">
@@ -303,6 +315,7 @@ export default function ExpensesView({
                       rates={rates}
                       tripId={trip.id}
                       onDelete={onDelete}
+                      onToggleExcluded={onToggleExcluded}
                     />
                   ))}
                 </ul>
@@ -325,12 +338,14 @@ function ExpenseRow({
   rates,
   tripId,
   onDelete,
+  onToggleExcluded,
 }: {
   row: MergedExpense;
   displayCurrency: Currency;
   rates: ExchangeRates;
   tripId: string;
   onDelete: (id: string) => void;
+  onToggleExcluded: (id: string, next: boolean) => void;
 }) {
   const converted = convertCurrency(
     row.amount,
@@ -339,6 +354,7 @@ function ExpenseRow({
     rates.rates,
   );
   const wasConverted = row.currency !== displayCurrency;
+  const isExcluded = row.kind === "manual" && row.excluded;
 
   const sharedClass =
     "flex items-center gap-3 rounded-lg bg-card-pure p-3 shadow-xs";
@@ -346,7 +362,9 @@ function ExpenseRow({
   const inner = (
     <>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold text-ink">
+        <div
+          className={`truncate text-sm font-semibold ${isExcluded ? "text-muted line-through" : "text-ink"}`}
+        >
           {row.description}
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-muted">
@@ -354,6 +372,11 @@ function ExpenseRow({
           {row.kind === "derived" && (
             <span className="rounded-full bg-info/10 px-1.5 py-0.5 text-[9px] font-bold text-info">
               🔗
+            </span>
+          )}
+          {isExcluded && (
+            <span className="rounded-full bg-muted/15 px-1.5 py-0.5 text-[9px] font-bold text-muted">
+              不列入
             </span>
           )}
         </div>
@@ -367,7 +390,9 @@ function ExpenseRow({
             🔄
           </span>
         )}
-        <div className="text-sm font-bold text-ink">
+        <div
+          className={`text-sm font-bold ${isExcluded ? "text-muted line-through" : "text-ink"}`}
+        >
           {formatMoney(converted, displayCurrency)}
         </div>
       </div>
@@ -388,15 +413,24 @@ function ExpenseRow({
   }
 
   return (
-    <li className={sharedClass}>
-      {inner}
-      <button
-        onClick={() => onDelete(row.expenseId)}
-        className="ml-1 text-muted hover:text-danger"
-        aria-label="刪除"
+    <li>
+      <SwipeableRow
+        className="rounded-lg"
+        actions={[
+          {
+            label: row.excluded ? "計入" : "不列入計算",
+            bg: "bg-warning",
+            onClick: () => onToggleExcluded(row.expenseId, !row.excluded),
+          },
+          {
+            label: "刪除",
+            bg: "bg-danger",
+            onClick: () => onDelete(row.expenseId),
+          },
+        ]}
       >
-        ×
-      </button>
+        <div className={sharedClass}>{inner}</div>
+      </SwipeableRow>
     </li>
   );
 }

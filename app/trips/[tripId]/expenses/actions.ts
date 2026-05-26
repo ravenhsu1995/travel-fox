@@ -37,6 +37,19 @@ export async function updateExpense(
   return { ok: true } as const;
 }
 
+export async function setExpenseExcluded(id: string, excluded: boolean) {
+  const supabase = await createClient();
+  const { error, data } = await supabase
+    .from("expenses")
+    .update({ excluded })
+    .eq("id", id)
+    .select("trip_id")
+    .single();
+  if (error) return { ok: false, error: error.message } as const;
+  if (data) revalidatePath(`/trips/${data.trip_id}/expenses`);
+  return { ok: true } as const;
+}
+
 export async function deleteExpense(id: string) {
   const supabase = await createClient();
   const { error, data } = await supabase
