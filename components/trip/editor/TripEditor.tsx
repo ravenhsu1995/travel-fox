@@ -15,7 +15,6 @@ import type {
 import {
   saveTrip,
   deleteTrip,
-  addDay,
   deleteDay,
 } from "@/app/trips/[tripId]/edit/actions";
 import {
@@ -56,6 +55,31 @@ async function saveDayRequest(
   }
 
   return { ok: true as const };
+}
+
+async function addDayRequest(
+  tripId: string,
+  position: "before" | "after",
+  relativeToDayId: string,
+) {
+  const res = await fetch(`/api/trips/${tripId}/days`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ position, relativeToDayId }),
+  });
+  const data = (await res.json()) as
+    | { ok: true; day: Day }
+    | { ok: false; error?: string };
+
+  if (!res.ok) {
+    const error = "error" in data ? data.error : undefined;
+    return { ok: false as const, error: error ?? "新增失敗" };
+  }
+  if (!data.ok) {
+    return { ok: false as const, error: data.error ?? "新增失敗" };
+  }
+
+  return { ok: true as const, day: data.day };
 }
 
 export default function TripEditor({
@@ -214,7 +238,7 @@ export default function TripEditor({
     const refDay = position === "before" ? firstDay : lastDay;
     if (!refDay) return;
     setAddingDay(false);
-    addDay(trip.id, position, refDay.id)
+    addDayRequest(trip.id, position, refDay.id)
       .then((r) => {
         if (!r.ok) {
           flash("err", r.error);
@@ -645,7 +669,7 @@ function HotelEditor({
             />
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold text-muted">Check-out</div>
+            <div className="mb-1 text-[10px] font-semibold text-muted">～ Check-out</div>
             <TimePicker
               value={hotel.checkout ?? null}
               onChange={(v) => onChange({ ...hotel, checkout: v })}
