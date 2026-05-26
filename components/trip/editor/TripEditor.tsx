@@ -67,8 +67,9 @@ export default function TripEditor({
           flash("ok", "行程資訊已儲存");
           setShowTripForm(false);
         } else flash("err", r.error);
-      } catch {
-        flash("err", "儲存失敗，請重試");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        flash("err", `儲存失敗：${msg}`);
       }
     });
   }
@@ -86,8 +87,9 @@ export default function TripEditor({
         });
         if (r.ok) flash("ok", "此日已儲存");
         else flash("err", r.error);
-      } catch {
-        flash("err", "儲存失敗，請重試");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        flash("err", `儲存失敗：${msg}`);
       }
     });
   }
