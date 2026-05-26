@@ -68,48 +68,77 @@ export async function deleteTrip(tripId: string) {
   return { ok: true } as const;
 }
 
-export async function addDay(tripId: string) {
+export async function addDay(
+  tripId: string,
+  position: "before" | "after",
+  relativeToDayId: string,
+) {
   const supabase = await createClient();
-  const { data: existing, error: e1 } = await supabase
+
+  // Fetch all days to determine sort_orders and dates
+  const { data: allDays, error: e1 } = await supabase
     .from("days")
-    .select("date, sort_order")
+    .select("id, date, sort_order")
     .eq("trip_id", tripId)
-    .order("sort_order", { ascending: false })
-    .limit(1);
+    .order("sort_order");
   if (e1) return { ok: false as const, error: e1.message };
 
-  const last = existing?.[0];
-  const nextDate = last
-    ? new Date(new Date(last.date).getTime() + 86_400_000)
-        .toISOString()
-        .slice(0, 10)
-    : new Date().toISOString().slice(0, 10);
-  const nextSort = (last?.sort_order ?? -1) + 1;
+  const refDay = (allDays ?? []).find((d) => d.id === relativeToDayId);
+  if (!refDay && (allDays ?? []).length > 0)
+    return { ok: false as const, error: "找不到參考日" };
 
-  const [y, m, d] = nextDate.split("-");
-  const weekday = ["日", "一", "二", "三", "四", "五", "六"][
-    new Date(nextDate).getDay()
-  ];
-  const dayLabel = `${+m}/${+d} (${weekday})`;
+  // Calculate new date
+  const refDate = refDay
+    ? new Date(refDay.date + "T00:00:00")
+    : new Date();
+  const newDate = new Date(refDate);
+  newDate.setDate(newDate.getDate() + (position === "after" ? 1 : -1));
+  const newDateStr = newDate.toISOString().slice(0, 10);
+
+  // Check uniqueness
+  if ((allDays ?? []).some((d) => d.date === newDateStr))
+    return { ok: false as const, error: `${newDateStr} 已存在，無法重複新增` };
+
+  // Determine new sort_order and shift existing days
+  const newSortOrder =
+    position === "after"
+      ? (refDay?.sort_order ?? -1) + 1
+      : (refDay?.sort_order ?? 0);
+
+  const toShift = (allDays ?? []).filter((d) =>
+    position === "after"
+      ? d.sort_order > (refDay?.sort_order ?? -1)
+      : d.sort_order >= (refDay?.sort_order ?? 0),
+  );
+  for (const d of toShift) {
+    await supabase
+      .from("days")
+      .update({ sort_order: d.sort_order + 1 })
+      .eq("id", d.id);
+  }
+
+  // Build day label
+  const weekday = ["日", "一", "二", "三", "四", "五", "六"][newDate.getDay()];
+  const dayLabel = `${newDate.getMonth() + 1}/${newDate.getDate()} (${weekday})`;
 
   const { data: inserted, error: e2 } = await supabase
     .from("days")
     .insert({
       trip_id: tripId,
-      date: nextDate,
+      date: newDateStr,
       day_label: dayLabel,
       theme: null,
       hotel: null,
       timeline: [],
-      sort_order: nextSort,
+      sort_order: newSortOrder,
     })
-    .select("id")
+    .select()
     .single();
   if (e2) return { ok: false as const, error: e2.message };
 
   revalidatePath(`/trips/${tripId}`);
   revalidatePath(`/trips/${tripId}/edit`);
-  return { ok: true as const, dayId: inserted.id, date: nextDate };
+  return { ok: true as const, day: inserted };
 }
 
 export async function deleteDay(dayId: string, tripId: string) {

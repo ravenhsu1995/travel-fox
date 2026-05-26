@@ -43,6 +43,7 @@ export default function TripEditor({
     null,
   );
   const [showTripForm, setShowTripForm] = useState(false);
+  const [addingDay, setAddingDay] = useState(false);
 
   const active = days.find((d) => d.id === activeDayId);
 
@@ -97,13 +98,26 @@ export default function TripEditor({
     });
   }
 
-  function onAddDay() {
-    addDay(trip.id).then((r) => {
+  function onAddDay(position: "before" | "after") {
+    if (!activeDayId) return;
+    setAddingDay(false);
+    addDay(trip.id, position, activeDayId).then((r) => {
       if (!r.ok) {
         flash("err", r.error);
         return;
       }
-      router.refresh();
+      const newDay = r.day as Day;
+      setDays((prev) => {
+        const shifted = prev.map((d) =>
+          (position === "after"
+            ? d.sort_order > (prev.find((x) => x.id === activeDayId)?.sort_order ?? -1)
+            : d.sort_order >= (prev.find((x) => x.id === activeDayId)?.sort_order ?? 0))
+            ? { ...d, sort_order: d.sort_order + 1 }
+            : d,
+        );
+        return [...shifted, newDay].sort((a, b) => a.sort_order - b.sort_order);
+      });
+      setActiveDayId(newDay.id);
       flash("ok", "已新增一天");
     });
   }
@@ -165,12 +179,35 @@ export default function TripEditor({
                 {d.day_label ?? d.date}
               </button>
             ))}
-            <button
-              onClick={onAddDay}
-              className="flex-shrink-0 rounded-full border border-white/30 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80 hover:bg-white/15"
-            >
-              + 新增一天
-            </button>
+            {addingDay ? (
+              <>
+                <button
+                  onClick={() => onAddDay("before")}
+                  className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
+                >
+                  ← 前一天
+                </button>
+                <button
+                  onClick={() => onAddDay("after")}
+                  className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
+                >
+                  後一天 →
+                </button>
+                <button
+                  onClick={() => setAddingDay(false)}
+                  className="flex-shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/50 hover:bg-white/10"
+                >
+                  取消
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setAddingDay(true)}
+                className="flex-shrink-0 rounded-full border border-white/30 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80 hover:bg-white/15"
+              >
+                + 新增一天
+              </button>
+            )}
           </div>
         )}
       </div>
