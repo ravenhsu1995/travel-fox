@@ -359,9 +359,6 @@ function ExpenseRow({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1 text-right">
-        <div className="text-sm font-bold text-ink">
-          {formatMoney(converted, displayCurrency)}
-        </div>
         {wasConverted && (
           <span
             className="text-xs text-muted"
@@ -370,6 +367,9 @@ function ExpenseRow({
             🔄
           </span>
         )}
+        <div className="text-sm font-bold text-ink">
+          {formatMoney(converted, displayCurrency)}
+        </div>
       </div>
     </>
   );
