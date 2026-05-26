@@ -98,20 +98,32 @@ export default function TripEditor({
     });
   }
 
+  const sortedDays = [...days].sort((a, b) => a.sort_order - b.sort_order);
+  const firstDay = sortedDays[0];
+  const lastDay = sortedDays[sortedDays.length - 1];
+
+  function dateLabel(dateStr: string, offset: number) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + offset);
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  }
+
   function onAddDay(position: "before" | "after") {
-    if (!activeDayId) return;
+    const refDay = position === "before" ? firstDay : lastDay;
+    if (!refDay) return;
     setAddingDay(false);
-    addDay(trip.id, position, activeDayId).then((r) => {
+    addDay(trip.id, position, refDay.id).then((r) => {
       if (!r.ok) {
         flash("err", r.error);
         return;
       }
       const newDay = r.day as Day;
       setDays((prev) => {
+        const refSortOrder = refDay.sort_order;
         const shifted = prev.map((d) =>
           (position === "after"
-            ? d.sort_order > (prev.find((x) => x.id === activeDayId)?.sort_order ?? -1)
-            : d.sort_order >= (prev.find((x) => x.id === activeDayId)?.sort_order ?? 0))
+            ? d.sort_order > refSortOrder
+            : d.sort_order >= refSortOrder)
             ? { ...d, sort_order: d.sort_order + 1 }
             : d,
         );
@@ -185,13 +197,13 @@ export default function TripEditor({
                   onClick={() => onAddDay("before")}
                   className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
                 >
-                  ← 前一天
+                  ← {firstDay ? dateLabel(firstDay.date, -1) : "前一天"}
                 </button>
                 <button
                   onClick={() => onAddDay("after")}
                   className="flex-shrink-0 rounded-full border border-white/40 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white hover:bg-white/25"
                 >
-                  後一天 →
+                  {lastDay ? dateLabel(lastDay.date, 1) : "後一天"} →
                 </button>
                 <button
                   onClick={() => setAddingDay(false)}
