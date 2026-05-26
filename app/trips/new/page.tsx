@@ -108,7 +108,7 @@ export default function NewTripPage() {
                     addChip();
                   }
                 }}
-                placeholder="城市或國家，輸入後按 +"
+                placeholder="輸入後按+"
                 className="h-12 flex-1 rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
               />
               <button

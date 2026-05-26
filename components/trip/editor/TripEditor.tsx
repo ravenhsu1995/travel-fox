@@ -254,7 +254,7 @@ function TripMetaForm({
           value={trip.subtitle}
           onChange={(v) => setTrip({ ...trip, subtitle: v })}
           separator=" · "
-          placeholder="城市或國家，輸入後按 +"
+          placeholder="輸入後按+"
         />
       </Field>
       <div className="grid grid-cols-2 gap-3">
@@ -800,7 +800,7 @@ function CityChipsEditor({
   value,
   onChange,
   separator = " • ",
-  placeholder = "輸入後按 +",
+  placeholder = "輸入後按+",
 }: {
   value: string | null;
   onChange: (v: string | null) => void;
