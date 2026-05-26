@@ -20,8 +20,6 @@ export default async function TripDetailPage({
 
   if (!trip) notFound();
 
-  const isOwner = trip.owner_id === claims.claims.sub;
-
   const { data: days } = await supabase
     .from("days")
     .select("*")
@@ -30,22 +28,21 @@ export default async function TripDetailPage({
 
   return (
     <>
+      {/* 返回管理頁的導覽列 */}
+      <div className="mx-auto w-full max-w-[480px] px-4 pt-3">
+        <Link
+          href="/trips"
+          className="text-xs font-semibold text-muted hover:text-ink"
+        >
+          ← 我的行程
+        </Link>
+      </div>
+
+      {/* 純查閱：不傳 canEdit / showExpenseLink，預設 false */}
       <TripView
         trip={trip}
         days={(days ?? []) as Day[]}
-        canEdit={isOwner}
-        showExpenseLink={isOwner}
       />
-      {isOwner && (
-        <div className="mx-auto w-full max-w-[480px] px-4 pb-10">
-          <Link
-            href={`/trips/${tripId}/edit`}
-            className="block w-full rounded-full bg-navy py-3 text-center text-sm font-semibold text-white shadow-md hover:bg-navy-lt"
-          >
-            ✏️ 編輯整個行程
-          </Link>
-        </div>
-      )}
     </>
   );
 }
