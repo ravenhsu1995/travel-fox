@@ -18,10 +18,12 @@ export default function HotelCard({ resolved }: { resolved: ResolvedHotel }) {
       </div>
       <div className="text-sm font-semibold text-ink">{hotel.name}</div>
       {(showCheckin || showCheckout) && (
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
-          {showCheckin && <span>Check-in：{hotel.checkin} 點後</span>}
+        <div className="mt-1 space-y-0.5 text-xs text-muted">
+          {showCheckin && (
+            <span className="block">Check-in：{hotel.checkin} 點後</span>
+          )}
           {showCheckout && (
-            <span>明早 check-out 提醒：{hotel.checkout} 點前</span>
+            <span className="block">明早 check-out 提醒：{hotel.checkout} 點前</span>
           )}
         </div>
       )}
