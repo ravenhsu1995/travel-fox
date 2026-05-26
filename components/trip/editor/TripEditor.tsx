@@ -345,15 +345,14 @@ function DayEditor({
         {saving ? "儲存中…" : "💾 儲存這一天"}
       </button>
 
-      <details className="text-xs text-muted">
-        <summary className="cursor-pointer">危險區</summary>
+      <div className="text-center">
         <button
           onClick={onDelete}
-          className="mt-2 rounded-md border border-danger/40 px-3 py-2 text-xs font-semibold text-danger hover:bg-danger/10"
+          className="text-xs font-semibold text-danger hover:underline"
         >
           🗑 刪除這一天
         </button>
-      </details>
+      </div>
     </section>
   );
 }
