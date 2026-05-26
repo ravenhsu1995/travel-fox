@@ -15,9 +15,9 @@ export default function HotelCard({ hotel }: { hotel: HotelInfo }) {
       {hotel.cost && (
         <div className="mt-1 text-xs text-ink-2">{hotel.cost}</div>
       )}
-      {hotel.mapQ && (
+      {(hotel.mapQ || hotel.name) && (
         <a
-          href={googleMapUrl(hotel.mapQ)}
+          href={googleMapUrl(hotel.mapQ || hotel.name)}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 inline-block text-xs font-semibold text-info hover:underline"

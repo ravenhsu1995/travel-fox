@@ -422,11 +422,6 @@ function HotelEditor({
           value={hotel.cost ?? ""}
           onChange={(v) => onChange({ ...hotel, cost: v })}
         />
-        <TextInput
-          placeholder="地圖搜尋字串"
-          value={hotel.mapQ ?? ""}
-          onChange={(v) => onChange({ ...hotel, mapQ: v })}
-        />
       </div>
     </Card>
   );
