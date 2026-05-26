@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import type { Currency, Day, Expense, Trip } from "@/lib/types";
 import {
   CURRENCIES,
-  CURRENCY_LABEL,
   CURRENCY_SYMBOL,
   convertCurrency,
   formatMoney,
@@ -20,22 +19,15 @@ import {
   type MergedExpense,
 } from "@/lib/derive-expenses";
 import {
-  addExpense,
   deleteExpense,
   setDerivedExcluded,
   setExpenseExcluded,
   type DerivedExclusionTarget,
 } from "@/app/trips/[tripId]/expenses/actions";
+import { colorForCategory, tintForCategory } from "@/lib/expense-categories";
 import SwipeableRow from "./SwipeableRow";
-
-const CATEGORIES = [
-  "🚆 交通",
-  "🏨 住宿",
-  "🍽 餐飲",
-  "✨ 體驗",
-  "🛍 購物",
-  "💊 其他",
-];
+import ExpenseDonutChart, { type DonutSegment } from "./ExpenseDonutChart";
+import ExpenseFormModal from "./ExpenseFormModal";
 
 function dateRange(start: string, end: string): string[] {
   const out: string[] = [];
@@ -70,18 +62,14 @@ export default function ExpensesView({
   rates: ExchangeRates;
 }) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const dates = useMemo(
     () => ["行前", ...dateRange(trip.start_date, trip.end_date)],
     [trip.start_date, trip.end_date],
   );
 
-  const [desc, setDesc] = useState("");
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState<Currency>("TWD");
-  const [category, setCategory] = useState(CATEGORIES[4]);
-  const [date, setDate] = useState(dates[1] ?? "行前");
+  const [formOpen, setFormOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Local mirror of expenses so swipe actions (delete / exclude) reflect
@@ -95,35 +83,6 @@ export default function ExpensesView({
     Record<string, boolean>
   >({});
   useEffect(() => setDerivedOverrides({}), [days]);
-
-  function reset() {
-    setDesc("");
-    setAmount("");
-  }
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const amt = parseFloat(amount);
-    if (!desc.trim()) return setError("請輸入描述");
-    if (!Number.isFinite(amt) || amt <= 0) return setError("金額需為正數");
-
-    startTransition(async () => {
-      const r = await addExpense({
-        trip_id: trip.id,
-        description: desc.trim(),
-        amount: amt,
-        currency,
-        category,
-        date,
-      });
-      if (!r.ok) setError(r.error);
-      else {
-        reset();
-        router.refresh();
-      }
-    });
-  }
 
   function onDelete(id: string) {
     if (!confirm("刪除這筆？")) return;
@@ -224,6 +183,25 @@ export default function ExpensesView({
     [merged, displayCurrency, rates.rates],
   );
 
+  const donutSegments = useMemo<DonutSegment[]>(() => {
+    const byCategory = new Map<string, number>();
+    for (const e of merged) {
+      if (e.excluded) continue;
+      const converted = convertCurrency(
+        e.amount,
+        e.currency,
+        displayCurrency,
+        rates.rates,
+      );
+      byCategory.set(e.category, (byCategory.get(e.category) ?? 0) + converted);
+    }
+    return Array.from(byCategory.entries()).map(([label, amount]) => ({
+      label,
+      amount,
+      color: colorForCategory(label),
+    }));
+  }, [merged, displayCurrency, rates.rates]);
+
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-4 pt-4 pb-10">
       <div className="mb-4 flex items-center justify-between">
@@ -236,15 +214,13 @@ export default function ExpensesView({
       </div>
 
       <section className="mb-3 rounded-xl bg-navy p-5 text-white shadow-md">
-        <div className="flex items-center justify-between text-xs opacity-70">
-          <span>行程總花費</span>
-          <span className="text-[10px] opacity-80">
-            即時匯率 · {fmtUpdatedAt(rates.fetched_at)}
-            {rates.source === "fallback" && "（離線）"}
-          </span>
-        </div>
+        <h2 className="text-base font-bold text-white">行程總花費</h2>
         <div className="mt-1 text-3xl font-extrabold">
           {formatMoney(grandTotal, displayCurrency)}
+        </div>
+        <div className="mt-0.5 text-[10px] text-white/70">
+          即時匯率 · {fmtUpdatedAt(rates.fetched_at)}
+          {rates.source === "fallback" && "（離線）"}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -266,121 +242,85 @@ export default function ExpensesView({
         </div>
       </section>
 
-      <form onSubmit={onSubmit} className="mb-5 space-y-2 rounded-xl bg-card p-4 shadow-sm">
-        <div className="mb-1 text-sm font-bold text-navy">＋ 記錄額外花費</div>
-        <div className="text-[11px] text-muted">
-          行程內的花費會自動加入；這裡只記錄行程外的支出（例如：購物）。
-        </div>
-        <input
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          placeholder="說明（例：藥妝店採購）"
-          className="h-11 w-full rounded-md border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
-        />
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="金額"
-            className="h-11 w-full rounded-md border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
-          />
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value as Currency)}
-            className="h-11 w-full rounded-md border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
+      <ExpenseDonutChart
+        segments={donutSegments}
+        displayCurrency={displayCurrency}
+      />
+
+      <section className="rounded-xl bg-card p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-base font-bold text-navy">消費列表</h2>
+          <button
+            type="button"
+            onClick={() => setFormOpen(true)}
+            className="h-8 rounded-full bg-gold px-3 text-xs font-semibold text-white shadow-sm hover:bg-gold-lt"
           >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {CURRENCY_SYMBOL[c]} {c} • {CURRENCY_LABEL[c]}
-              </option>
-            ))}
-          </select>
+            ＋ 新增額外花費
+          </button>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="h-11 w-full rounded-md border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="h-11 w-full rounded-md border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
-          >
-            {dates.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-        </div>
+
         {error && (
-          <p className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+          <p className="mb-3 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
             {error}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={pending}
-          className="h-11 w-full rounded-md bg-gold text-sm font-semibold text-white shadow-sm hover:bg-gold-lt disabled:opacity-50"
-        >
-          {pending ? "處理中…" : "新增"}
-        </button>
-      </form>
 
-      {byDate.length === 0 && legacy.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-line-2 bg-card p-6 text-center text-sm text-muted">
-          還沒有花費記錄
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {byDate.map(([d, items]) => {
-            const dayTotal = items.reduce((s, e) => {
-              if (e.excluded) return s;
+        {byDate.length === 0 && legacy.length === 0 ? (
+          <div className="py-6 text-center text-sm text-muted">
+            還沒有花費記錄
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {byDate.map(([d, items]) => {
+              const dayTotal = items.reduce((s, e) => {
+                if (e.excluded) return s;
+                return (
+                  s + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates)
+                );
+              }, 0);
               return (
-                s + convertCurrency(e.amount, e.currency, displayCurrency, rates.rates)
+                <section key={d}>
+                  <header className="mb-1.5 flex items-center justify-between text-xs">
+                    <span className="font-bold text-ink-2">{d}</span>
+                    <span className="text-muted">
+                      {formatMoney(dayTotal, displayCurrency)}
+                    </span>
+                  </header>
+                  <ul className="space-y-1.5">
+                    {items.map((e) => (
+                      <ExpenseRow
+                        key={e.key}
+                        row={e}
+                        displayCurrency={displayCurrency}
+                        rates={rates}
+                        tripId={trip.id}
+                        onDelete={onDelete}
+                        onToggleExcluded={onToggleExcluded}
+                        onToggleDerivedExcluded={onToggleDerivedExcluded}
+                      />
+                    ))}
+                  </ul>
+                </section>
               );
-            }, 0);
-            return (
-              <section key={d}>
-                <header className="mb-1.5 flex items-center justify-between text-xs">
-                  <span className="font-bold text-ink-2">{d}</span>
-                  <span className="text-muted">
-                    {formatMoney(dayTotal, displayCurrency)}
-                  </span>
-                </header>
-                <ul className="space-y-1.5">
-                  {items.map((e) => (
-                    <ExpenseRow
-                      key={e.key}
-                      row={e}
-                      displayCurrency={displayCurrency}
-                      rates={rates}
-                      tripId={trip.id}
-                      onDelete={onDelete}
-                      onToggleExcluded={onToggleExcluded}
-                      onToggleDerivedExcluded={onToggleDerivedExcluded}
-                    />
-                  ))}
-                </ul>
-              </section>
-            );
-          })}
+            })}
 
-          {legacy.length > 0 && (
-            <LegacySection tripId={trip.id} legacy={legacy} />
-          )}
-        </div>
-      )}
+            {legacy.length > 0 && (
+              <LegacySection tripId={trip.id} legacy={legacy} />
+            )}
+          </div>
+        )}
+      </section>
+
+      <ExpenseFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        trip={trip}
+        dates={dates}
+        onSubmitted={() => {
+          setFormOpen(false);
+          router.refresh();
+        }}
+      />
     </main>
   );
 }
@@ -415,8 +355,8 @@ function ExpenseRow({
   const wasConverted = row.currency !== displayCurrency;
   const isExcluded = row.excluded;
 
-  const sharedClass =
-    "flex items-center gap-3 rounded-lg bg-card-pure p-3 shadow-xs";
+  const sharedClass = "flex items-center gap-3 rounded-lg p-3 shadow-xs";
+  const tintStyle = { backgroundColor: tintForCategory(row.category) };
 
   const inner = (
     <>
@@ -478,7 +418,8 @@ function ExpenseRow({
         >
           <Link
             href={`/trips/${tripId}/edit?day=${row.sourceDayId}`}
-            className={`${sharedClass} hover:bg-bg-2`}
+            className={sharedClass}
+            style={tintStyle}
           >
             {inner}
           </Link>
@@ -504,7 +445,9 @@ function ExpenseRow({
           },
         ]}
       >
-        <div className={sharedClass}>{inner}</div>
+        <div className={sharedClass} style={tintStyle}>
+          {inner}
+        </div>
       </SwipeableRow>
     </li>
   );
