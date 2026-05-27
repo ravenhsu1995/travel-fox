@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAccessToken, pgrest } from "@/lib/supabase/rest";
 import { CURRENCIES } from "@/lib/currency";
+import { normalizeJoinedLocationChips } from "@/lib/location-chips";
 
 type SaveDayBody = {
   theme: unknown;
@@ -79,7 +80,10 @@ export async function PATCH(
       path: `/rest/v1/days?id=eq.${dayId}&trip_id=eq.${tripId}`,
       jwt,
       body: {
-        theme: typeof body.theme === "string" ? body.theme : null,
+        theme:
+          typeof body.theme === "string"
+            ? normalizeJoinedLocationChips(body.theme, " • ")
+            : null,
         hotel: body.hotel ?? null,
         timeline: Array.isArray(body.timeline) ? body.timeline : [],
       },

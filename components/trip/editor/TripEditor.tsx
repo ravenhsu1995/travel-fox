@@ -15,9 +15,10 @@ import type {
 } from "@/lib/types";
 import { CURRENCIES, CURRENCY_LABEL, CURRENCY_SYMBOL } from "@/lib/currency";
 import {
-  saveTrip,
-  deleteTrip,
-} from "@/app/trips/[tripId]/edit/actions";
+  joinLocationChips,
+  normalizeLocationChip,
+  splitLocationChips,
+} from "@/lib/location-chips";
 import {
   resolveDayHotel,
   daysRemainingFrom,
@@ -66,6 +67,50 @@ type Props = {
   initialDays: Day[];
   initialDayId?: string;
 };
+
+async function readMutationResult<T extends { ok: true }>(
+  res: Response,
+  fallback: string,
+): Promise<T | { ok: false; error: string }> {
+  const data = (await res.json().catch(() => null)) as
+    | T
+    | { ok: false; error?: string }
+    | null;
+  const error = data?.ok === false ? data.error : undefined;
+  if (!res.ok) {
+    return { ok: false, error: error ?? fallback };
+  }
+  if (!data?.ok) {
+    return { ok: false, error: error ?? fallback };
+  }
+  return data;
+}
+
+async function saveTripRequest(trip: Trip) {
+  return readMutationResult<{ ok: true }>(
+    await fetch(`/api/trips/${trip.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: trip.title,
+        subtitle: trip.subtitle,
+        cover_emoji: trip.cover_emoji,
+        start_date: trip.start_date,
+        end_date: trip.end_date,
+      }),
+    }),
+    "儲存失敗",
+  );
+}
+
+async function deleteTripRequest(tripId: string) {
+  return readMutationResult<{ ok: true }>(
+    await fetch(`/api/trips/${tripId}`, {
+      method: "DELETE",
+    }),
+    "刪除失敗",
+  );
+}
 
 async function saveDayRequest(
   tripId: string,
@@ -168,14 +213,7 @@ export default function TripEditor({
   function onTripSave() {
     startTripSave(async () => {
       try {
-        const r = await saveTrip({
-          id: trip.id,
-          title: trip.title,
-          subtitle: trip.subtitle,
-          cover_emoji: trip.cover_emoji,
-          start_date: trip.start_date,
-          end_date: trip.end_date,
-        });
+        const r = await saveTripRequest(trip);
         if (r.ok) {
           flash("ok", "行程資訊已儲存");
           setShowTripForm(false);
@@ -280,7 +318,7 @@ export default function TripEditor({
 
   function onDeleteTrip() {
     if (!confirm("確定要刪除這整個行程嗎？所有日程都會一併刪除。")) return;
-    deleteTrip(trip.id).then((r) => {
+    deleteTripRequest(trip.id).then((r) => {
       if (r.ok) router.push("/trips");
       else flash("err", r.error);
     });
@@ -501,12 +539,12 @@ function TripMetaForm({
           className="h-12 w-full rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
         />
       </Field>
-      <Field label="城市／國家">
+      <Field label="遊玩地區">
         <CityChipsEditor
           value={trip.subtitle}
           onChange={(v) => setTrip({ ...trip, subtitle: v })}
           separator=" · "
-          placeholder="輸入後按+"
+          placeholder="例如：神戶，輸入後按＋"
         />
       </Field>
       <div className="grid grid-cols-2 gap-3">
@@ -578,7 +616,7 @@ function DayEditor({
       <Card>
         <div className="text-xs font-semibold text-muted">{day.day_label}</div>
         <div className="mt-2">
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">城市</div>
+          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">遊玩地區</div>
           <CityChipsEditor
             value={day.theme}
             onChange={(v) => onChange({ theme: v })}
@@ -1214,22 +1252,20 @@ function CityChipsEditor({
   value,
   onChange,
   separator = " • ",
-  placeholder = "輸入後按+",
+  placeholder = "例如：神戶，輸入後按＋",
 }: {
   value: string | null;
   onChange: (v: string | null) => void;
   separator?: string;
   placeholder?: string;
 }) {
-  const cities = value
-    ? value.split(/\s*[•·]\s*/).map((s) => s.trim()).filter(Boolean)
-    : [];
+  const cities = splitLocationChips(value);
   const [draft, setDraft] = useState("");
   function commit(next: string[]) {
-    onChange(next.length === 0 ? null : next.join(separator));
+    onChange(joinLocationChips(next, separator));
   }
   function add() {
-    const v = draft.trim();
+    const v = normalizeLocationChip(draft);
     if (!v) return;
     commit([...cities, v]);
     setDraft("");

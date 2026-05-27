@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createTrip } from "./actions";
+import { joinLocationChips, normalizeLocationChip } from "@/lib/location-chips";
 
 const EMOJIS = ["🤷", "🕺", "🦶", "🍿", "🎇", "🧌", "🗺️", "⛺", "🌠", "🌊", "🎢", "🤗", "❤️‍🔥"];
 
@@ -15,7 +16,7 @@ export default function NewTripPage() {
   const [subtitleChips, setSubtitleChips] = useState<string[]>([]);
   const [subtitleDraft, setSubtitleDraft] = useState("");
   function addChip() {
-    const v = subtitleDraft.trim();
+    const v = normalizeLocationChip(subtitleDraft);
     if (!v) return;
     setSubtitleChips([...subtitleChips, v]);
     setSubtitleDraft("");
@@ -25,9 +26,9 @@ export default function NewTripPage() {
     setError(null);
     const formData = new FormData(e.currentTarget);
     formData.set("cover_emoji", emoji);
-    const pending = subtitleDraft.trim();
+    const pending = normalizeLocationChip(subtitleDraft);
     const allChips = pending ? [...subtitleChips, pending] : subtitleChips;
-    formData.set("subtitle", allChips.join(" · "));
+    formData.set("subtitle", joinLocationChips(allChips) ?? "");
 
     startTransition(async () => {
       const result = await createTrip(formData);
@@ -77,7 +78,7 @@ export default function NewTripPage() {
           />
         </Field>
 
-        <Field label="城市／國家">
+        <Field label="遊玩地區">
           <div className="space-y-2">
             <div className="flex flex-wrap gap-1.5">
               {subtitleChips.map((c, i) => (
@@ -108,7 +109,7 @@ export default function NewTripPage() {
                     addChip();
                   }
                 }}
-                placeholder="輸入後按+"
+                placeholder="例如：神戶，輸入後按＋"
                 className="h-12 flex-1 rounded-lg border border-line-2 bg-card-pure px-3 text-sm outline-none focus:border-gold"
               />
               <button

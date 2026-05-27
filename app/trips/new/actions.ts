@@ -1,6 +1,7 @@
 "use server";
 
 import { getAccessToken, pgrest } from "@/lib/supabase/rest";
+import { normalizeJoinedLocationChips } from "@/lib/location-chips";
 
 function getJwtSubject(jwt: string): string | null {
   const payload = jwt.split(".")[1];
@@ -45,7 +46,9 @@ type InsertedTrip = {
 export async function createTrip(formData: FormData): Promise<CreateTripResult> {
   try {
     const title = String(formData.get("title") ?? "").trim();
-    const subtitle = String(formData.get("subtitle") ?? "").trim() || null;
+    const subtitle = normalizeJoinedLocationChips(
+      String(formData.get("subtitle") ?? ""),
+    );
     const emoji = String(formData.get("cover_emoji") ?? "🗺️").trim() || "🗺️";
     const start = String(formData.get("start_date") ?? "");
     const end = String(formData.get("end_date") ?? "");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { deleteTripFromList } from "@/app/trips/actions";
+import { useRouter } from "next/navigation";
 
 type Props = {
   tripId: string;
@@ -9,14 +9,28 @@ type Props = {
 };
 
 export default function DeleteTripButton({ tripId, tripTitle }: Props) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function handleDelete() {
     if (!window.confirm(`確定要刪除「${tripTitle}」嗎？\n此操作無法復原。`)) return;
 
     startTransition(async () => {
-      const result = await deleteTripFromList(tripId);
-      if (!result.ok) alert(`刪除失敗：${result.error}`);
+      try {
+        const res = await fetch(`/api/trips/${tripId}`, { method: "DELETE" });
+        const data = (await res.json().catch(() => null)) as
+          | { ok: true }
+          | { ok: false; error?: string }
+          | null;
+        if (!res.ok || !data?.ok) {
+          const err = data && data.ok === false ? data.error : undefined;
+          alert(`刪除失敗：${err ?? "請稍後再試"}`);
+          return;
+        }
+        router.refresh();
+      } catch (err) {
+        alert(`刪除失敗：${err instanceof Error ? err.message : "請稍後再試"}`);
+      }
     });
   }
 

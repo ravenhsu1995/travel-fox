@@ -2,6 +2,7 @@
 
 import { getAccessToken, pgrest } from "@/lib/supabase/rest";
 import type { Day, HotelInfo, TimelineItem, Trip } from "@/lib/types";
+import { normalizeJoinedLocationChips } from "@/lib/location-chips";
 
 // NOTE: All mutations here use direct PostgREST fetch (via @/lib/supabase/rest)
 // instead of the @supabase/ssr SDK. Going through the SDK can trigger
@@ -38,7 +39,7 @@ export async function saveTrip(payload: SaveTripPayload) {
       jwt,
       body: {
         title: payload.title,
-        subtitle: payload.subtitle,
+        subtitle: normalizeJoinedLocationChips(payload.subtitle),
         cover_emoji: payload.cover_emoji,
         start_date: payload.start_date,
         end_date: payload.end_date,
@@ -62,7 +63,7 @@ export async function saveDay(payload: SaveDayPayload) {
       path: `/rest/v1/days?id=eq.${payload.id}`,
       jwt,
       body: {
-        theme: payload.theme,
+        theme: normalizeJoinedLocationChips(payload.theme, " • "),
         hotel: payload.hotel,
         timeline: payload.timeline,
       },

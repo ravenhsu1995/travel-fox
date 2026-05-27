@@ -81,7 +81,15 @@ export async function pgrest<T = unknown>({
     return { ok: false, error: `${res.status} ${text || res.statusText}` };
   }
 
-  if (res.status === 204) return { ok: true, data: undefined as T };
-  const data = (await res.json()) as T;
-  return { ok: true, data };
+  // PostgREST returns empty body for 204 (PATCH/DELETE without Prefer) and
+  // for 201 POST without Prefer: return=representation. Both must be treated
+  // as success — calling res.json() on empty body throws SyntaxError.
+  const text = await res.text();
+  if (!text) return { ok: true, data: undefined as T };
+  try {
+    return { ok: true, data: JSON.parse(text) as T };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Invalid JSON response: ${msg}` };
+  }
 }

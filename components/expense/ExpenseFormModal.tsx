@@ -8,16 +8,16 @@ import {
   CURRENCY_SYMBOL,
 } from "@/lib/currency";
 import { CATEGORIES } from "@/lib/expense-categories";
-import { addExpense } from "@/app/trips/[tripId]/expenses/actions";
 
+// Parent gates mount via `{open && <ExpenseFormModal ... />}`, so this
+// component is only alive while the modal is open. Form state resets
+// naturally on each remount; no useEffect cleanup needed.
 export default function ExpenseFormModal({
-  open,
   onClose,
   trip,
   dates,
   onSubmitted,
 }: {
-  open: boolean;
   onClose: () => void;
   trip: Trip;
   dates: string[];
@@ -32,7 +32,6 @@ export default function ExpenseFormModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
@@ -43,17 +42,7 @@ export default function ExpenseFormModal({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [open, onClose]);
-
-  // Reset form whenever it closes so the next open starts clean.
-  useEffect(() => {
-    if (open) return;
-    setDesc("");
-    setAmount("");
-    setError(null);
-  }, [open]);
-
-  if (!open) return null;
+  }, [onClose]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,16 +52,32 @@ export default function ExpenseFormModal({
     if (!Number.isFinite(amt) || amt <= 0) return setError("金額需為正數");
 
     startTransition(async () => {
-      const r = await addExpense({
-        trip_id: trip.id,
-        description: desc.trim(),
-        amount: amt,
-        currency,
-        category,
-        date,
-      });
-      if (!r.ok) setError(r.error);
-      else onSubmitted();
+      try {
+        const res = await fetch(`/api/trips/${trip.id}/expenses`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            description: desc.trim(),
+            amount: amt,
+            currency,
+            category,
+            date,
+          }),
+        });
+        const data = (await res.json().catch(() => null)) as
+          | { ok: true }
+          | { ok: false; error?: string }
+          | null;
+        if (!res.ok || !data?.ok) {
+          const err =
+            data && data.ok === false ? data.error : undefined;
+          setError(err ?? "新增失敗");
+          return;
+        }
+        onSubmitted();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "新增失敗");
+      }
     });
   }
 

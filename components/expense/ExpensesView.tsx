@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Currency, Day, Expense, Trip } from "@/lib/types";
@@ -18,12 +18,7 @@ import {
   type LegacyCostRow,
   type MergedExpense,
 } from "@/lib/derive-expenses";
-import {
-  deleteExpense,
-  setDerivedExcluded,
-  setExpenseExcluded,
-  type DerivedExclusionTarget,
-} from "@/app/trips/[tripId]/expenses/actions";
+import type { DerivedExclusionTarget } from "@/app/trips/[tripId]/expenses/actions";
 import { colorForCategory, tintForCategory } from "@/lib/expense-categories";
 import SwipeableRow from "./SwipeableRow";
 import ExpenseDonutChart, { type DonutSegment } from "./ExpenseDonutChart";
@@ -74,27 +69,61 @@ export default function ExpensesView({
 
   // Local mirror of expenses so swipe actions (delete / exclude) reflect
   // instantly in the UI without waiting for a server roundtrip + revalidate.
+  // When fresh server data arrives via props, resync during render — this is
+  // the React-recommended "store info from previous renders" pattern, see
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  useEffect(() => setExpenses(initialExpenses), [initialExpenses]);
+  const [prevInitialExpenses, setPrevInitialExpenses] = useState(initialExpenses);
+  if (prevInitialExpenses !== initialExpenses) {
+    setPrevInitialExpenses(initialExpenses);
+    setExpenses(initialExpenses);
+  }
 
   // Optimistic overrides for derived rows (keyed by DerivedExpense.key).
   // Cleared whenever fresh days arrive from the server.
   const [derivedOverrides, setDerivedOverrides] = useState<
     Record<string, boolean>
   >({});
-  useEffect(() => setDerivedOverrides({}), [days]);
+  const [prevDays, setPrevDays] = useState(days);
+  if (prevDays !== days) {
+    setPrevDays(days);
+    setDerivedOverrides({});
+  }
+
+  async function readMutationResult(
+    res: Response,
+    fallback: string,
+  ): Promise<{ ok: true } | { ok: false; error: string }> {
+    const data = (await res.json().catch(() => null)) as
+      | { ok: true }
+      | { ok: false; error?: string }
+      | null;
+    if (!res.ok || !data?.ok) {
+      const err = data && data.ok === false ? data.error : undefined;
+      return { ok: false, error: err ?? fallback };
+    }
+    return { ok: true };
+  }
 
   function onDelete(id: string) {
     if (!confirm("刪除這筆？")) return;
     const snapshot = expenses;
     setExpenses((prev) => prev.filter((e) => e.id !== id));
     startTransition(async () => {
-      const r = await deleteExpense(id);
-      if (!r.ok) {
-        setError(r.error);
+      try {
+        const res = await fetch(`/api/trips/${trip.id}/expenses/${id}`, {
+          method: "DELETE",
+        });
+        const r = await readMutationResult(res, "刪除失敗");
+        if (!r.ok) {
+          setError(r.error);
+          setExpenses(snapshot);
+        } else {
+          router.refresh();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "刪除失敗");
         setExpenses(snapshot);
-      } else {
-        router.refresh();
       }
     });
   }
@@ -105,13 +134,31 @@ export default function ExpensesView({
       prev.map((e) => (e.id === id ? { ...e, excluded: next } : e)),
     );
     startTransition(async () => {
-      const r = await setExpenseExcluded(id, next);
-      if (!r.ok) {
-        setError(r.error);
+      try {
+        const res = await fetch(`/api/trips/${trip.id}/expenses/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ excluded: next }),
+        });
+        const r = await readMutationResult(res, "儲存失敗");
+        if (!r.ok) {
+          setError(r.error);
+          setExpenses(snapshot);
+        } else {
+          router.refresh();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "儲存失敗");
         setExpenses(snapshot);
-      } else {
-        router.refresh();
       }
+    });
+  }
+
+  function clearDerivedOverride(key: string) {
+    setDerivedOverrides((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
     });
   }
 
@@ -122,15 +169,30 @@ export default function ExpensesView({
   ) {
     setDerivedOverrides((prev) => ({ ...prev, [key]: next }));
     startTransition(async () => {
-      const r = await setDerivedExcluded(target, next);
-      if (!r.ok) {
-        setError(r.error);
-        setDerivedOverrides((prev) => {
-          const { [key]: _drop, ...rest } = prev;
-          return rest;
-        });
-      } else {
-        router.refresh();
+      try {
+        const res = await fetch(
+          `/api/trips/${trip.id}/expenses/derived`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              dayId: target.dayId,
+              kind: target.kind,
+              index: target.kind === "timeline" ? target.index : undefined,
+              excluded: next,
+            }),
+          },
+        );
+        const r = await readMutationResult(res, "儲存失敗");
+        if (!r.ok) {
+          setError(r.error);
+          clearDerivedOverride(key);
+        } else {
+          router.refresh();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "儲存失敗");
+        clearDerivedOverride(key);
       }
     });
   }
@@ -313,16 +375,17 @@ export default function ExpensesView({
         )}
       </section>
 
-      <ExpenseFormModal
-        open={formOpen}
-        onClose={() => setFormOpen(false)}
-        trip={trip}
-        dates={dates}
-        onSubmitted={() => {
-          setFormOpen(false);
-          router.refresh();
-        }}
-      />
+      {formOpen && (
+        <ExpenseFormModal
+          onClose={() => setFormOpen(false)}
+          trip={trip}
+          dates={dates}
+          onSubmitted={() => {
+            setFormOpen(false);
+            router.refresh();
+          }}
+        />
+      )}
     </main>
   );
 }
