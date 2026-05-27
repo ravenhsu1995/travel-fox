@@ -20,11 +20,11 @@ const TYPE_BADGE: Record<TimelineItem["type"], { label: string; cls: string }> =
 export default function TimelineItemView({ item }: { item: TimelineItem }) {
   const badge = TYPE_BADGE[item.type];
   return (
-    <article className="relative pl-12">
-      <div className="absolute left-3 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-white shadow-sm">
+    <article className="relative pl-14">
+      <div className="absolute left-0 top-1 flex h-8 min-w-12 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold leading-none text-white shadow-sm">
         {item.time}
       </div>
-      <div className="absolute left-[26px] top-9 bottom-0 w-px bg-line-2" />
+      <div className="absolute left-6 top-10 bottom-0 w-px bg-line-2" />
 
       <div className={`mb-1 text-[10px] font-bold ${badge.cls}`}>
         {badge.label}

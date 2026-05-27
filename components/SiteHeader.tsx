@@ -10,7 +10,7 @@ export default async function SiteHeader() {
 
   return (
     <header
-      className="relative z-30 mx-auto flex w-full max-w-[480px] items-center justify-between px-5 py-3"
+      className="relative z-30 mx-auto flex w-full max-w-[480px] items-center justify-between gap-3 px-5 py-3"
       style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
     >
       <Link href="/" className="flex items-center" aria-label="旅行狐狸 首頁">
@@ -21,11 +21,11 @@ export default async function SiteHeader() {
           height={311}
           preload
           sizes="240px"
-          className="h-12 w-auto"
+          className="h-10 w-auto min-[380px]:h-12"
         />
       </Link>
       {isAuthed ? (
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex shrink-0 items-center gap-2 text-xs min-[380px]:gap-3">
           <Link
             href="/trips"
             className="rounded-full bg-gold-pale px-3 py-1.5 font-semibold text-gold"
@@ -45,7 +45,7 @@ export default async function SiteHeader() {
       ) : (
         <Link
           href="/login"
-          className="rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
+          className="shrink-0 rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
         >
           登入
         </Link>

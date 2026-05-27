@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
@@ -37,7 +38,15 @@ export default async function TripsPage() {
 
       {list.length === 0 ? (
         <section className="rounded-xl border border-dashed border-line-2 bg-card p-8 text-center">
-          <div className="mb-2 text-3xl">🗺️</div>
+          <Image
+            src="/mascot-empty.webp"
+            alt=""
+            width={96}
+            height={116}
+            priority
+            unoptimized
+            className="mx-auto mb-3 h-[96px] w-auto object-contain"
+          />
           <h2 className="text-base font-bold text-ink">還沒有行程</h2>
           <p className="mt-1 text-sm text-muted">建立你的第一個旅遊行程</p>
           <Link

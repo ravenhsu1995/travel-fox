@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { Currency } from "@/lib/types";
 import { formatMoney } from "@/lib/currency";
 
@@ -36,24 +37,31 @@ export default function ExpenseDonutChart({
     );
   }
 
-  let accumulatedAngle = 0;
+  const chartSegments = sorted.map((seg, index) => {
+    const fraction = seg.amount / total;
+    const startAngle = sorted
+      .slice(0, index)
+      .reduce((sum, item) => sum + (item.amount / total) * 360, 0);
+
+    return {
+      ...seg,
+      arcLength: fraction * CIRCUMFERENCE,
+      startAngle,
+    };
+  });
 
   return (
     <section className="mb-3 rounded-xl bg-card p-5 shadow-sm">
       <h2 className="mb-3 text-base font-bold text-navy">花費分布</h2>
       <div className="flex justify-center">
-        <svg
-          viewBox="0 0 100 100"
-          className="h-44 w-44"
-          role="img"
-          aria-label="各類別花費比例"
-        >
-          {sorted.map((seg) => {
-            const fraction = seg.amount / total;
-            const arcLength = fraction * CIRCUMFERENCE;
-            const startAngle = accumulatedAngle;
-            accumulatedAngle += fraction * 360;
-            return (
+        <div className="relative h-44 w-44">
+          <svg
+            viewBox="0 0 100 100"
+            className="relative z-10 h-44 w-44"
+            role="img"
+            aria-label="各類別花費比例"
+          >
+            {chartSegments.map((seg) => (
               <circle
                 key={seg.label}
                 cx={CENTER}
@@ -62,12 +70,27 @@ export default function ExpenseDonutChart({
                 fill="none"
                 stroke={seg.color}
                 strokeWidth={STROKE_WIDTH}
-                strokeDasharray={`${arcLength} ${CIRCUMFERENCE}`}
-                transform={`rotate(${startAngle - 90} ${CENTER} ${CENTER})`}
+                strokeDasharray={`${seg.arcLength} ${CIRCUMFERENCE}`}
+                transform={`rotate(${
+                  seg.startAngle - 90
+                } ${CENTER} ${CENTER})`}
               />
-            );
-          })}
-        </svg>
+            ))}
+          </svg>
+          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+            <div className="h-[5.35rem] w-[5.35rem] overflow-hidden rounded-full bg-card">
+              <Image
+                src="/mascot-expense-donut.png"
+                alt=""
+                width={661}
+                height={633}
+                className="h-full w-full object-cover object-[50%_18%]"
+                aria-hidden="true"
+                unoptimized
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <ul className="mt-4 space-y-2">
