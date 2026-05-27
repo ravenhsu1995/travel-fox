@@ -32,10 +32,9 @@ export default async function TripDetailPage({
       <div className="mx-auto w-full max-w-[480px] px-4 pt-3">
         <Link
           href="/trips"
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-card-pure px-4 text-sm font-extrabold text-navy shadow-sm ring-1 ring-line-2 transition hover:bg-gold-pale"
+          className="inline-flex h-9 items-center text-base font-semibold text-muted hover:text-ink"
         >
-          <span className="text-lg leading-none">←</span>
-          <span>我的行程</span>
+          ← 我的行程
         </Link>
       </div>
 
