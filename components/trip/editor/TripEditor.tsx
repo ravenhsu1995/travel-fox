@@ -62,6 +62,18 @@ function validateDay(day: Day): string | null {
   return null;
 }
 
+function dayHasContent(day: Day): boolean {
+  return Boolean(
+    day.theme?.trim() ||
+      day.hotel ||
+      day.timeline.length > 0,
+  );
+}
+
+function isDayInTripRange(day: Day, trip: Trip): boolean {
+  return day.date >= trip.start_date && day.date <= trip.end_date;
+}
+
 type Props = {
   initialTrip: Trip;
   initialDays: Day[];
@@ -87,7 +99,7 @@ async function readMutationResult<T extends { ok: true }>(
 }
 
 async function saveTripRequest(trip: Trip) {
-  return readMutationResult<{ ok: true }>(
+  return readMutationResult<{ ok: true; days?: Day[] }>(
     await fetch(`/api/trips/${trip.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -211,10 +223,29 @@ export default function TripEditor({
   }
 
   function onTripSave() {
+    const outOfRangeContentDays = days.filter(
+      (day) => !isDayInTripRange(day, trip) && dayHasContent(day),
+    );
+    if (outOfRangeContentDays.length > 0) {
+      const labels = outOfRangeContentDays
+        .map((day) => day.day_label ?? day.date)
+        .join("、");
+      const confirmed = confirm(
+        `新的行程日期不包含 ${labels}，但這些日期已有內容。\n\n儲存後內容會保留，不會自動刪除；你仍可之後手動刪除這些日期。\n\n要繼續儲存嗎？`,
+      );
+      if (!confirmed) return;
+    }
+
     startTripSave(async () => {
       try {
         const r = await saveTripRequest(trip);
         if (r.ok) {
+          if (r.days) {
+            setDays(r.days);
+            if (!r.days.some((day) => day.id === activeDayId)) {
+              setActiveDayId(r.days[0]?.id ?? "");
+            }
+          }
           flash("ok", "行程資訊已儲存");
           setShowTripForm(false);
         } else flash("err", r.error);

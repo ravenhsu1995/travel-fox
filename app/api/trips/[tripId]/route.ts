@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAccessToken, pgrest } from "@/lib/supabase/rest";
 import { normalizeJoinedLocationChips } from "@/lib/location-chips";
+import type { Day } from "@/lib/types";
 
 type SaveTripBody = {
   title?: unknown;
@@ -14,6 +15,96 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function asTrimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function eachDate(start: string, end: string): string[] {
+  const out: string[] = [];
+  const cursor = new Date(`${start}T00:00:00Z`);
+  const last = new Date(`${end}T00:00:00Z`);
+
+  while (cursor.getTime() <= last.getTime()) {
+    out.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return out;
+}
+
+function dayLabel(dateStr: string): string {
+  const date = new Date(`${dateStr}T00:00:00Z`);
+  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+  return `${date.getUTCMonth() + 1}/${date.getUTCDate()} (${weekdays[date.getUTCDay()]})`;
+}
+
+async function syncTripDays(
+  tripId: string,
+  startDate: string,
+  endDate: string,
+  jwt: string,
+): Promise<{ ok: true; days: Day[] } | { ok: false; error: string }> {
+  const existingResult = await pgrest<Day[]>({
+    method: "GET",
+    path: `/rest/v1/days?select=id,trip_id,date,day_label,theme,hotel,timeline,sort_order&trip_id=eq.${tripId}&order=date`,
+    jwt,
+  });
+  if (!existingResult.ok) return existingResult;
+
+  const existingDays = existingResult.data ?? [];
+  const existingDates = new Set(existingDays.map((day) => day.date));
+  const missingDates = eachDate(startDate, endDate).filter(
+    (date) => !existingDates.has(date),
+  );
+
+  let insertedDays: Day[] = [];
+  if (missingDates.length > 0) {
+    const insertResult = await pgrest<Day[]>({
+      method: "POST",
+      path: "/rest/v1/days?select=id,trip_id,date,day_label,theme,hotel,timeline,sort_order",
+      jwt,
+      returnRow: true,
+      body: missingDates.map((date) => ({
+        trip_id: tripId,
+        date,
+        day_label: dayLabel(date),
+        theme: null,
+        hotel: null,
+        timeline: [],
+        sort_order: 0,
+      })),
+    });
+    if (!insertResult.ok) return insertResult;
+    insertedDays = insertResult.data ?? [];
+  }
+
+  const sortedDays = [...existingDays, ...insertedDays].sort((a, b) =>
+    a.date.localeCompare(b.date),
+  );
+
+  const sortResults = await Promise.all(
+    sortedDays.map((day, index) => {
+      if (day.sort_order === index) {
+        return Promise.resolve({ ok: true as const, data: undefined });
+      }
+      return pgrest({
+        method: "PATCH",
+        path: `/rest/v1/days?id=eq.${day.id}&trip_id=eq.${tripId}`,
+        jwt,
+        body: { sort_order: index },
+      });
+    }),
+  );
+  for (const sortResult of sortResults) {
+    if (!sortResult.ok) return sortResult;
+  }
+
+  const refreshedResult = await pgrest<Day[]>({
+    method: "GET",
+    path: `/rest/v1/days?select=id,trip_id,date,day_label,theme,hotel,timeline,sort_order&trip_id=eq.${tripId}&order=sort_order`,
+    jwt,
+  });
+  if (!refreshedResult.ok) return refreshedResult;
+
+  return { ok: true, days: refreshedResult.data ?? [] };
 }
 
 export async function PATCH(
@@ -73,7 +164,15 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json({ ok: true });
+    const syncResult = await syncTripDays(tripId, startDate, endDate, jwt);
+    if (!syncResult.ok) {
+      return NextResponse.json(
+        { ok: false, error: syncResult.error },
+        { status: 400 },
+      );
+    }
+
+    return NextResponse.json({ ok: true, days: syncResult.days });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
