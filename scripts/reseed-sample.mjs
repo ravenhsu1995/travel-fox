@@ -44,7 +44,7 @@ const days = [
   {
     date: "2026-05-03", day_label: "5/3 (\u65e5)", theme: "\u795e\u6236 \u2022 \u660e\u77f3", sort_order: 1,
     hotel: null,
-    timeline: [{"time":"09:15","type":"transport","transport":{"tool":"JR","from":"三宮","to":"明石","duration":"35min","note":"JR 神戶線"}},{"time":"10:00","type":"exp","exp":{"spot":"魚之棚","desc":"魚之棚：在地海鮮廚房採買"}},{"time":"10:30","type":"meal","meal":{"type":"早餐","name":"明石玉子焼 中々","dishes":"明石燒"}},{"time":"11:30","type":"exp","exp":{"spot":"明石海峽大橋","desc":"明石海峽大橋散步道：海上透明步道"}},{"time":"12:30","type":"meal","meal":{"type":"午餐","name":"こじゃんと2号店","dishes":"土佐丼"}},{"time":"14:30","type":"exp","exp":{"spot":"三宮高架下酒場街","desc":"融入在地夜晚文化，昭和風情高架下小店，氣氛獨特"}},{"time":"15:30","type":"meal","meal":{"type":"點心","name":"食ぱんの店 春夏+秋冬 三宮センタープラザ店","dishes":"生甜甜圈＆吐司"}},{"time":"20:00","type":"meal","meal":{"type":"晚餐","name":"土佐清水ワールド 三宮生けすセンター","dishes":"居酒屋"}}],
+    timeline: [{"time":"09:15","type":"transport","transport":{"tool":"JR","from":"三宮","to":"明石","duration":"35min","note":"JR 神戶線"}},{"time":"10:00","type":"exp","exp":{"spot":"魚之棚","desc":"魚之棚：在地海鮮廚房採買"}},{"time":"10:30","type":"meal","meal":{"type":"早餐","name":"明石玉子焼 中々","dishes":"明石燒"}},{"time":"11:30","type":"exp","exp":{"spot":"明石海峽大橋","desc":"明石海峽大橋散步道：海上透明步道"}},{"time":"12:30","type":"meal","meal":{"type":"午餐","name":"こじゃんと2号店","dishes":"土佐丼"}},{"time":"14:30","type":"meal","meal":{"type":"點心","name":"食ぱんの店 春夏+秋冬 三宮センタープラザ店","dishes":"生甜甜圈＆吐司"}},{"time":"15:30","type":"exp","exp":{"spot":"三宮高架下酒場街","desc":"融入在地夜晚文化，昭和風情高架下小店，氣氛獨特"}},{"time":"20:00","type":"meal","meal":{"type":"晚餐","name":"土佐清水ワールド 三宮生けすセンター","dishes":"居酒屋"}}],
   },
   {
     date: "2026-05-04", day_label: "5/4 (\u4e00)", theme: "神戶 • 丹波篠山", sort_order: 2,
