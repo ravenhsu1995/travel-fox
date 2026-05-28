@@ -179,11 +179,12 @@ function VisibilityDialog({
           </div>
         )}
 
-        {/* Token preservation rule: unlisted ↔ public keeps the link alive;
-            only switching to private revokes it. */}
+        {/* Token rule: the share URL is a permanent per-trip identifier.
+            Private state just blanks the contents on /s/[token]; switching
+            back to non-private restores access on the same URL. */}
         {picked === "private" && trip.visibility !== "private" && (
           <p className="rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
-            ⚠️ 切到私人會讓現有的分享連結永久失效（再次開放會產生新連結）。
+            切到私人後，現有連結會顯示「此行程目前為私人」；之後再次開放會自動恢復可看，連結不變。
           </p>
         )}
 
