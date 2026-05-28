@@ -420,10 +420,10 @@ export default function TripEditor({
       >
         <div className="flex items-center justify-between">
           <Link
-            href={`/trips/${trip.id}`}
+            href="/trips"
             className="text-xs font-semibold opacity-80 hover:opacity-100"
           >
-            ← 回到檢視
+            ← 我的行程
           </Link>
           <div className="flex items-center gap-2 text-xs">
             <button

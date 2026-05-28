@@ -268,10 +268,10 @@ export default function ExpensesView({
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-4 pt-4 pb-10">
       <div className="mb-4 flex items-center justify-between">
         <Link
-          href={`/trips/${trip.id}`}
+          href="/trips"
           className="text-xs font-semibold text-muted hover:text-ink"
         >
-          ← {trip.title}
+          ← 我的行程
         </Link>
       </div>
 
