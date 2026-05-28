@@ -71,7 +71,7 @@ export default function EditModeMenu({ tripId }: Props) {
           >
             <StarIcon className="mt-0.5 h-4 w-4 text-gold" />
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-ink">旅行後</div>
+              <div className="text-xs font-semibold text-ink">旅行中/後</div>
               <div className="mt-0.5 text-[11px] text-muted">評價進行中或已完成的行程</div>
             </div>
           </Link>
