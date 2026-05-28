@@ -426,9 +426,28 @@ export default function TripEditor({
           <div className="flex items-center gap-2 text-xs">
             <button
               onClick={() => setShowTripForm((v) => !v)}
-              className="rounded-full bg-white/15 px-3 py-1 font-semibold hover:bg-white/25"
+              className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 font-semibold hover:bg-white/25"
             >
-              {showTripForm ? "收合行程資訊" : "✏️ 行程資訊"}
+              {showTripForm ? (
+                "收合行程資訊"
+              ) : (
+                <>
+                  <svg
+                    className="h-3.5 w-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                  </svg>
+                  行程資訊
+                </>
+              )}
             </button>
           </div>
         </div>
