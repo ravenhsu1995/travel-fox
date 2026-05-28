@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TripView from "@/components/trip/TripView";
+import { stripFeedbackFromDays } from "@/lib/strip-feedback";
 import type { Day, TripForView, Visibility } from "@/lib/types";
 
 // RFC 4122 UUID format (any version). Guards against malformed input
@@ -47,7 +48,11 @@ export default async function SharedTripPage({
 
   // Unlisted: render the itinerary read-only.
   if (!payload.trip) notFound();
-  return <TripView trip={payload.trip} days={payload.days ?? []} />;
+  const rawDays = payload.days ?? [];
+  const visibleDays = payload.trip.share_show_feedback
+    ? rawDays
+    : stripFeedbackFromDays(rawDays);
+  return <TripView trip={payload.trip} days={visibleDays} />;
 }
 
 function PrivateLanding() {

@@ -15,7 +15,7 @@ export default async function TripDetailPage({
 
   const { data: trip } = await supabase
     .from("trips")
-    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, created_at")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, share_show_feedback, created_at")
     .eq("id", tripId)
     .maybeSingle<Trip>();
 

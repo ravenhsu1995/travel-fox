@@ -39,6 +39,9 @@ export type ExperienceItem = {
 
 export type TimelineType = "transport" | "meal" | "exp";
 
+export const RATINGS = ["ㄅ", "ㄆ", "ㄇ", "ㄈ", "ㄉ"] as const;
+export type Rating = (typeof RATINGS)[number];
+
 export type TimelineItem = {
   time: string;
   type: TimelineType;
@@ -46,6 +49,8 @@ export type TimelineItem = {
   meal?: MealBlock;
   exp?: ExperienceItem;
   excluded?: boolean;
+  rating?: Rating;
+  comment?: string;
 };
 
 export type HotelInfo = {
@@ -74,6 +79,7 @@ export type Trip = {
   visibility: Visibility;
   share_token: string | null;
   public_display_name: string | null;
+  share_show_feedback: boolean;
   created_at: string;
 };
 

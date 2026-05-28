@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
 import VisibilityBadgeButton from "@/components/trip/VisibilityBadgeButton";
 import ShareButton from "@/components/trip/ShareButton";
-import { EyeIcon, PencilIcon, WalletIcon } from "@/components/icons";
+import EditModeMenu from "@/components/trip/EditModeMenu";
+import { EyeIcon, WalletIcon } from "@/components/icons";
 import type { Trip } from "@/lib/types";
 
 function daysBetween(start: string, end: string): number {
@@ -21,7 +22,7 @@ export default async function TripsPage() {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, created_at")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, share_show_feedback, created_at")
     .eq("owner_id", claims.claims.sub)
     .order("created_at", { ascending: false });
 
@@ -107,13 +108,7 @@ export default async function TripsPage() {
                   <EyeIcon />
                   檢閱
                 </Link>
-                <Link
-                  href={`/trips/${t.id}/edit`}
-                  className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
-                >
-                  <PencilIcon />
-                  編輯
-                </Link>
+                <EditModeMenu tripId={t.id} />
                 <Link
                   href={`/trips/${t.id}/expenses`}
                   className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"

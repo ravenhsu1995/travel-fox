@@ -85,3 +85,30 @@ export function SaveIcon({ className }: IconProps) {
     </Frame>
   );
 }
+
+export function ClipboardIcon({ className }: IconProps) {
+  return (
+    <Frame className={className}>
+      <rect x="8" y="2" width="8" height="4" rx="1" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <path d="M9 12h6" />
+      <path d="M9 16h6" />
+    </Frame>
+  );
+}
+
+export function StarIcon({ className }: IconProps) {
+  return (
+    <Frame className={className}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </Frame>
+  );
+}
+
+export function MessageSquareIcon({ className }: IconProps) {
+  return (
+    <Frame className={className}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </Frame>
+  );
+}
