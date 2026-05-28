@@ -59,7 +59,20 @@ export default function ShareButton({ trip }: Props) {
         className={buttonClass}
         aria-expanded={open}
       >
-        🔗 分享
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m22 2-7 20-4-9-9-4Z" />
+          <path d="M22 2 11 13" />
+        </svg>
+        分享
       </button>
 
       {open && (

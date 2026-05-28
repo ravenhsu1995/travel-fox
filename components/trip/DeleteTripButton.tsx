@@ -39,9 +39,27 @@ export default function DeleteTripButton({ tripId, tripTitle }: Props) {
       type="button"
       onClick={handleDelete}
       disabled={pending}
+      aria-label="刪除行程"
       className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-danger hover:bg-danger/10 disabled:opacity-40"
     >
-      {pending ? "刪除中…" : "🗑️"}
+      {pending ? (
+        "刪除中…"
+      ) : (
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M3 6h18" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </svg>
+      )}
     </button>
   );
 }

@@ -13,6 +13,25 @@ function daysBetween(start: string, end: string): number {
   return Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
 }
 
+// Shared SVG wrapper for the action-bar icons: keeps every glyph the same
+// stroke weight, size, and colour-binding so the row reads as one toolbar.
+function ActionIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      className="h-4 w-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {children}
+    </svg>
+  );
+}
+
 export default async function TripsPage() {
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
@@ -95,25 +114,40 @@ export default async function TripsPage() {
                 </div>
               </Link>
 
-              {/* Action bar: 檢閱 / 編輯 / 記帳 / 分享(條件) / 🗑 */}
+              {/* Action bar: 檢閱 / 編輯 / 記帳 / 分享(條件) / 刪除
+                  All icons are inline SVGs in a unified Lucide stroke style
+                  so the row reads as one consistent toolbar. */}
               <div className="flex items-center gap-1 border-t border-line-2 px-3 py-2">
                 <Link
                   href={`/trips/${t.id}`}
                   className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
                 >
-                  👀 檢閱
+                  <ActionIcon>
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </ActionIcon>
+                  檢閱
                 </Link>
                 <Link
                   href={`/trips/${t.id}/edit`}
                   className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
                 >
-                  ✏️ 編輯
+                  <ActionIcon>
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                  </ActionIcon>
+                  編輯
                 </Link>
                 <Link
                   href={`/trips/${t.id}/expenses`}
                   className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
                 >
-                  💴 記帳
+                  <ActionIcon>
+                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                  </ActionIcon>
+                  記帳
                 </Link>
                 {t.visibility !== "private" && <ShareButton trip={t} />}
                 <div className="ml-auto">
