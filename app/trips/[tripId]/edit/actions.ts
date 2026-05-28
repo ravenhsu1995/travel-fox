@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { getAccessToken, pgrest } from "@/lib/supabase/rest";
 import type { Day, HotelInfo, TimelineItem, Trip, Visibility } from "@/lib/types";
 import { normalizeJoinedLocationChips } from "@/lib/location-chips";
@@ -249,10 +248,12 @@ export async function updateVisibility(
     });
     if (!result.ok) return { ok: false, error: result.error };
 
-    revalidatePath(`/trips/${tripId}`);
-    revalidatePath(`/trips/${tripId}/edit`);
-    revalidatePath("/trips");
-    revalidatePath("/samples");
+    // NOTE: deliberately no revalidatePath. Calling it from a Server Action
+    // makes Next.js re-render the current page in the action response, which
+    // collides with @supabase/ssr's cookie-refresh path and surfaces as
+    // "this page couldn't load" on Vercel. Same reason saveTrip/saveDay
+    // skip revalidate. Client-side setTrip handles the immediate UI update;
+    // /samples and /trips have `revalidate = 60` so they self-refresh.
 
     return {
       ok: true,
