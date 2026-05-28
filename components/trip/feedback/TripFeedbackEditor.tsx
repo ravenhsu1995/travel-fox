@@ -328,10 +328,10 @@ function ItemFeedbackRow({
                 key={r}
                 type="button"
                 onClick={() => pickRating(r)}
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold transition ${
                   active
-                    ? "bg-gold text-white shadow-sm"
-                    : "bg-card-pure text-muted hover:bg-line-2"
+                    ? "border-gold bg-gold text-white shadow-sm"
+                    : "border-line-2 bg-card-pure text-muted hover:bg-line-2"
                 }`}
                 aria-pressed={active}
               >
