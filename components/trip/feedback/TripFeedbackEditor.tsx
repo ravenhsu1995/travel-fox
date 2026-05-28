@@ -264,11 +264,11 @@ function ShareToggleRow({
         aria-pressed={enabled}
       >
         <div className="min-w-0">
-          <div className="text-xs font-semibold text-ink">公開分享頁顯示回饋</div>
+          <div className="text-xs font-semibold text-ink">在分享頁面中顯示你的評價</div>
           <div className="mt-0.5 text-[11px] text-muted">
             {isPrivate
               ? "目前行程為私人，僅你能看到。打開後若改為「不公開連結」或「公開」，他人才看得到。"
-              : "開啟後，拿到分享連結或從公開列表進入的人也會看到評分與評語。"}
+              : "開啟後，拿到分享連結或從公開列表進入的人，也會看到你的評分與評語。"}
           </div>
         </div>
         <Switch on={enabled} />

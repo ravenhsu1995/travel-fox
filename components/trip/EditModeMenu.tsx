@@ -34,7 +34,11 @@ export default function EditModeMenu({ tripId }: Props) {
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
+        className={`flex h-8 items-center gap-1 px-2.5 text-xs font-semibold transition ${
+          open
+            ? "bg-card-pure text-ink"
+            : "rounded-lg text-ink-2 hover:bg-card-pure"
+        }`}
         aria-expanded={open}
       >
         <PencilIcon />
@@ -44,12 +48,12 @@ export default function EditModeMenu({ tripId }: Props) {
       {open && (
         <div
           ref={popoverRef}
-          className="absolute left-0 top-full z-50 mt-2 w-[240px] rounded-xl border border-line-2 bg-card-pure p-2 shadow-lg"
+          className="absolute left-0 top-full z-50 min-w-[200px] bg-card-pure shadow-md"
           role="menu"
         >
           <Link
             href={`/trips/${tripId}/edit`}
-            className="flex items-start gap-2 rounded-lg px-2.5 py-2 text-ink-2 hover:bg-card"
+            className="flex items-start gap-2 px-2.5 py-2 text-ink-2 hover:bg-card"
             role="menuitem"
             onClick={() => setOpen(false)}
           >
@@ -61,7 +65,7 @@ export default function EditModeMenu({ tripId }: Props) {
           </Link>
           <Link
             href={`/trips/${tripId}/feedback`}
-            className="mt-1 flex items-start gap-2 rounded-lg px-2.5 py-2 text-ink-2 hover:bg-card"
+            className="flex items-start gap-2 px-2.5 py-2 text-ink-2 hover:bg-card"
             role="menuitem"
             onClick={() => setOpen(false)}
           >
