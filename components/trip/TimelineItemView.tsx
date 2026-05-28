@@ -116,7 +116,7 @@ export default function TimelineItemView({
             alt=""
             width={88}
             height={88}
-            className="pointer-events-none absolute right-2 top-1/2 h-20 w-20 -translate-y-1/2 select-none opacity-[0.18]"
+            className="pointer-events-none absolute left-[60%] top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 select-none opacity-[0.18]"
             aria-hidden
           />
         )}
