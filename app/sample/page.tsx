@@ -1,19 +1,62 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
+import TripView from "@/components/trip/TripView";
+import { stripFeedbackFromDays } from "@/lib/strip-feedback";
+import type { Day, TripForView } from "@/lib/types";
 
 export const revalidate = 60;
 
-// Legacy route. Points to the singleton public sample (2026 關西行); if for
-// any reason that row is missing, fall back to the samples gallery so the
-// home page entry never lands on a dead end.
-export default async function SampleRedirect() {
+// Fast path for the home page's featured 2026 關西行 card. Rendering the
+// singleton sample here avoids an extra query + redirect through /samples/[id].
+export default async function SamplePage() {
   const supabase = createPublicClient();
-  const { data } = await supabase
+  const { data: trip } = await supabase
     .from("trips")
-    .select("id")
+    .select(
+      "id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, public_display_name, share_show_feedback, created_at",
+    )
     .eq("is_public_sample", true)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<TripForView>();
 
-  if (data?.id) redirect(`/samples/${data.id}`);
-  redirect("/samples");
+  if (!trip) redirect("/samples");
+
+  const { data: days } = await supabase
+    .from("days")
+    .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
+    .eq("trip_id", trip.id)
+    .order("sort_order");
+
+  const ownerName = trip.public_display_name?.trim() || "匿名狐狸";
+  const rawDays = (days ?? []) as Day[];
+  const visibleDays = trip.share_show_feedback
+    ? rawDays
+    : stripFeedbackFromDays(rawDays);
+
+  return (
+    <>
+      <div className="mx-auto w-full max-w-[480px] px-4 pt-3">
+        <Link
+          href="/"
+          className="inline-flex h-8 items-center text-sm font-semibold text-muted hover:text-ink"
+        >
+          ← 首頁
+        </Link>
+      </div>
+      <TripView trip={trip} days={visibleDays} />
+      <section className="mx-auto w-full max-w-[480px] px-4 pb-10">
+        <div className="rounded-xl bg-gold-pale p-4 text-center">
+          <p className="text-xs text-muted">
+            這個行程由 <span className="font-semibold text-ink">{ownerName}</span> 公開分享
+          </p>
+          <Link
+            href="/login"
+            className="mt-3 inline-block rounded-full bg-navy px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-navy-lt"
+          >
+            登入 / 註冊建立自己的行程 →
+          </Link>
+        </div>
+      </section>
+    </>
+  );
 }
