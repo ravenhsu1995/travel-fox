@@ -55,7 +55,7 @@ export default function EditModeMenu({ tripId }: Props) {
           >
             <ClipboardIcon className="mt-0.5 h-4 w-4 text-success" />
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-ink">旅行前（規劃）</div>
+              <div className="text-xs font-semibold text-ink">旅行前</div>
               <div className="mt-0.5 text-[11px] text-muted">建立或調整尚未出發的行程</div>
             </div>
           </Link>
@@ -67,8 +67,8 @@ export default function EditModeMenu({ tripId }: Props) {
           >
             <StarIcon className="mt-0.5 h-4 w-4 text-gold" />
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-ink">旅行後（回饋）</div>
-              <div className="mt-0.5 text-[11px] text-muted">為已完成的行程打分、寫評語</div>
+              <div className="text-xs font-semibold text-ink">旅行後</div>
+              <div className="mt-0.5 text-[11px] text-muted">評價進行中或已完成的行程</div>
             </div>
           </Link>
         </div>
