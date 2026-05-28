@@ -68,7 +68,7 @@ cd travel-app
 git init
 git add .
 git commit -m "feat: initial travel app"
-gh repo create travel-app --private --source=. --remote=origin --push
+gh repo create travel-fox --private --source=. --remote=origin --push
 # 或者手動到 github.com 開私有 repo 後 git push
 ```
 
