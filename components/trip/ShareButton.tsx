@@ -73,7 +73,7 @@ export default function ShareButton({ trip }: Props) {
           <div className="text-xs font-semibold text-ink">
             {trip.visibility === "public"
               ? "🌍 公開行程連結"
-              : "🔗 非公開分享連結"}
+              : "🔗 分享連結"}
           </div>
           <p className="mt-0.5 text-[11px] text-muted">
             {trip.visibility === "public"

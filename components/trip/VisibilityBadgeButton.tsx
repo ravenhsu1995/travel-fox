@@ -167,7 +167,7 @@ function VisibilityDialog({
         {picked === "public" && (
           <div>
             <label className="text-[11px] font-semibold text-muted">
-              顯示名稱（在範例行程卡片顯示，留空 = 匿名狐狸）
+              製作人姓名（在範例行程卡片顯示，留空 = 匿名狐狸）
             </label>
             <input
               value={name}
@@ -184,7 +184,7 @@ function VisibilityDialog({
             back to non-private restores access on the same URL. */}
         {picked === "private" && trip.visibility !== "private" && (
           <p className="rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
-            切到私人後，現有連結會顯示「此行程目前為私人」；之後再次開放會自動恢復可看，連結不變。
+            切到私人後，現有連結會顯示「此行程目前為私人」。
           </p>
         )}
 

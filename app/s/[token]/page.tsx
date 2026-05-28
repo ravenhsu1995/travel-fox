@@ -72,9 +72,7 @@ function PrivateLanding() {
         </h1>
 
         <p className="mt-3 max-w-[280px] text-sm leading-relaxed text-white/75">
-          擁有者目前不公開這份行程，暫時看不到內容。
-          <br />
-          如果之後再次開放，<span className="text-white">這條連結會自動恢復</span>。
+          擁有者目前不公開這份行程。
         </p>
 
         <div className="mt-8 flex w-full flex-col gap-2">
