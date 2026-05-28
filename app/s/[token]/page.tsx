@@ -52,22 +52,49 @@ export default async function SharedTripPage({
 
 function PrivateLanding() {
   return (
-    <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="text-5xl">🔒</div>
-      <h1 className="mt-4 text-lg font-extrabold text-navy">
-        此行程目前為私人
-      </h1>
-      <p className="mt-2 text-sm text-muted">
-        擁有者把這個行程切回了私人，所以暫時看不到內容。
-        <br />
-        如果之後再次開放，這條連結會自動恢復。
-      </p>
-      <Link
-        href="/samples"
-        className="mt-6 inline-flex h-10 items-center rounded-full bg-navy px-5 text-xs font-semibold text-white shadow-sm hover:bg-navy-lt"
-      >
-        看其他公開行程 →
-      </Link>
+    <main
+      className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-5"
+      style={{ paddingTop: "calc(2rem + env(safe-area-inset-top))" }}
+    >
+      <section className="my-auto flex flex-col items-center rounded-3xl bg-gradient-to-b from-navy to-navy-lt px-6 py-12 text-center text-white shadow-xl">
+        <div
+          aria-hidden
+          className="flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-5xl backdrop-blur-sm"
+        >
+          🔒
+        </div>
+
+        <h1
+          className="mt-6 text-2xl font-black tracking-wide"
+          style={{ fontFamily: "var(--font-serif)" }}
+        >
+          此行程目前為私人
+        </h1>
+
+        <p className="mt-3 max-w-[280px] text-sm leading-relaxed text-white/75">
+          擁有者目前不公開這份行程，暫時看不到內容。
+          <br />
+          如果之後再次開放，<span className="text-white">這條連結會自動恢復</span>。
+        </p>
+
+        <div className="mt-8 flex w-full flex-col gap-2">
+          <Link
+            href="/samples"
+            className="flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-bold text-navy shadow-sm hover:bg-white/90"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            看其他公開行程
+          </Link>
+          <Link
+            href="/"
+            className="flex h-11 items-center justify-center rounded-full border border-white/30 px-5 text-xs font-semibold text-white/80 hover:bg-white/10"
+          >
+            回首頁
+          </Link>
+        </div>
+      </section>
+
+      <div className="h-8" aria-hidden />
     </main>
   );
 }
