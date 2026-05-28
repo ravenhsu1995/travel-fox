@@ -60,6 +60,8 @@ export type HotelInfo = {
   excluded?: boolean;
 };
 
+export type Visibility = "private" | "unlisted" | "public";
+
 export type Trip = {
   id: string;
   owner_id: string | null;
@@ -69,8 +71,16 @@ export type Trip = {
   end_date: string;
   cover_emoji: string;
   is_public_sample: boolean;
+  visibility: Visibility;
+  share_token: string | null;
+  public_display_name: string | null;
   created_at: string;
 };
+
+// Narrower projection for public / shared pages that must NOT carry
+// owner_id or share_token. RPC `get_shared_trip_by_token` and /samples
+// queries return this shape.
+export type TripForView = Omit<Trip, "owner_id" | "share_token">;
 
 export type Day = {
   id: string;

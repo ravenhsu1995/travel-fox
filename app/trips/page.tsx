@@ -3,13 +3,19 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
-import type { Trip } from "@/lib/types";
+import type { Trip, Visibility } from "@/lib/types";
 
 function daysBetween(start: string, end: string): number {
   const s = new Date(start).getTime();
   const e = new Date(end).getTime();
   return Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
 }
+
+const VISIBILITY_ICON: Record<Visibility, { icon: string; label: string }> = {
+  private: { icon: "🔒", label: "私人" },
+  unlisted: { icon: "🔗", label: "非公開" },
+  public: { icon: "🌍", label: "公開" },
+};
 
 export default async function TripsPage() {
   const supabase = await createClient();
@@ -18,7 +24,7 @@ export default async function TripsPage() {
 
   const { data: trips } = await supabase
     .from("trips")
-    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, created_at")
     .eq("owner_id", claims.claims.sub)
     .order("created_at", { ascending: false });
 
@@ -59,14 +65,21 @@ export default async function TripsPage() {
       ) : (
         <ul className="space-y-3">
           {list.map((t) => (
-            <li key={t.id} className="rounded-xl bg-card shadow-sm">
+            <li key={t.id} className="relative rounded-xl bg-card shadow-sm">
+              <span
+                aria-label={`可見性：${VISIBILITY_ICON[t.visibility].label}`}
+                title={VISIBILITY_ICON[t.visibility].label}
+                className="absolute right-3 top-3 text-base leading-none"
+              >
+                {VISIBILITY_ICON[t.visibility].icon}
+              </span>
               {/* 查閱區：點擊進入前台 view */}
               <Link
                 href={`/trips/${t.id}`}
                 className="flex items-center gap-3 px-4 pt-4 pb-3 transition hover:opacity-80"
               >
                 <div className="text-2xl">{t.cover_emoji}</div>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 pr-6">
                   <div className="truncate text-sm font-bold text-ink">
                     {t.title}
                   </div>

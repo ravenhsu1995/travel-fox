@@ -15,10 +15,11 @@ export default async function ExpensesPage({
 
   const { data: trip } = await supabase
     .from("trips")
-    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, created_at")
     .eq("id", tripId)
     .maybeSingle<Trip>();
   if (!trip) notFound();
+  if (trip.owner_id !== claims.claims.sub) notFound();
 
   const [{ data: days }, { data: expenses }, rates] = await Promise.all([
     supabase

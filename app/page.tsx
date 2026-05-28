@@ -169,7 +169,7 @@ export default async function Home() {
       {/* ═══ CTAS ═══ */}
       <section className="mt-5 flex flex-col gap-3 px-5">
         <Link
-          href="/sample"
+          href="/samples"
           className="flex min-h-[54px] items-center justify-center gap-2.5 rounded-full border-2 border-teal/40 bg-card-pure px-5 text-[16px] font-bold tracking-wide text-teal shadow-sm transition active:scale-[0.98]"
           style={{ fontFamily: "var(--font-serif)" }}
         >

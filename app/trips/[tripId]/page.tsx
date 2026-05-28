@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TripView from "@/components/trip/TripView";
+import ShareButton from "@/components/trip/ShareButton";
 import type { Day, Trip } from "@/lib/types";
 
 export default async function TripDetailPage({
@@ -14,11 +15,21 @@ export default async function TripDetailPage({
 
   const { data: trip } = await supabase
     .from("trips")
-    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, created_at")
+    .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, created_at")
     .eq("id", tripId)
     .maybeSingle<Trip>();
 
   if (!trip) notFound();
+
+  // Owner guard: /trips/[id] is the owner-side route. Non-owner reaching
+  // a public trip's owner URL is redirected to the gallery view; anything
+  // else is 404.
+  if (trip.owner_id !== claims.claims.sub) {
+    if (trip.visibility === "public" || trip.is_public_sample) {
+      redirect(`/samples/${trip.id}`);
+    }
+    notFound();
+  }
 
   const { data: days } = await supabase
     .from("days")
@@ -29,20 +40,20 @@ export default async function TripDetailPage({
   return (
     <>
       {/* 返回管理頁的導覽列 */}
-      <div className="mx-auto w-full max-w-[480px] px-4 pt-3">
+      <div className="mx-auto flex w-full max-w-[480px] items-center justify-between px-4 pt-3">
         <Link
           href="/trips"
           className="inline-flex h-8 items-center text-sm font-semibold text-muted hover:text-ink"
         >
           ← 我的行程
         </Link>
+        {trip.visibility !== "private" && (
+          <ShareButton trip={trip} variant="view" />
+        )}
       </div>
 
       {/* 純查閱：不傳 canEdit / showExpenseLink，預設 false */}
-      <TripView
-        trip={trip}
-        days={(days ?? []) as Day[]}
-      />
+      <TripView trip={trip} days={(days ?? []) as Day[]} />
     </>
   );
 }

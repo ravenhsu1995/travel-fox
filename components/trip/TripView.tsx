@@ -3,14 +3,14 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { Day, Trip } from "@/lib/types";
+import type { Day, TripForView } from "@/lib/types";
 import HotelCard from "./HotelCard";
 import TimelineItemView from "./TimelineItemView";
 import { resolveDayHotel } from "@/lib/resolveDayHotel";
 import { mascotIndexForDay } from "@/lib/mascot-for-day";
 
 type Props = {
-  trip: Trip;
+  trip: TripForView;
   days: Day[];
   canEdit?: boolean;
   showExpenseLink?: boolean;
