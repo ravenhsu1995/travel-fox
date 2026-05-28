@@ -167,7 +167,7 @@ function VisibilityDialog({
         {picked === "public" && (
           <div>
             <label className="text-[11px] font-semibold text-muted">
-              製作人姓名（在範例行程卡片顯示，留空 = 匿名狐狸）
+              製作人姓名（在範例行程中想顯示的名字，留空 = 匿名狐狸）
             </label>
             <input
               value={name}
