@@ -24,7 +24,6 @@ import {
   daysRemainingFrom,
   type ResolvedHotel,
 } from "@/lib/resolveDayHotel";
-import VisibilitySection from "./VisibilitySection";
 
 type CostFields = {
   cost?: string;
@@ -506,22 +505,13 @@ export default function TripEditor({
       )}
 
       {showTripForm && (
-        <>
-          <TripMetaForm
-            trip={trip}
-            setTrip={setTrip}
-            saving={savingTrip}
-            onSave={onTripSave}
-            onDelete={onDeleteTrip}
-          />
-          <div className="px-4 pb-2">
-            <VisibilitySection
-              trip={trip}
-              onChange={(patch) => setTrip({ ...trip, ...patch })}
-              onFlash={flash}
-            />
-          </div>
-        </>
+        <TripMetaForm
+          trip={trip}
+          setTrip={setTrip}
+          saving={savingTrip}
+          onSave={onTripSave}
+          onDelete={onDeleteTrip}
+        />
       )}
 
       {!showTripForm && active && (

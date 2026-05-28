@@ -3,19 +3,15 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
-import type { Trip, Visibility } from "@/lib/types";
+import VisibilityBadgeButton from "@/components/trip/VisibilityBadgeButton";
+import ShareButton from "@/components/trip/ShareButton";
+import type { Trip } from "@/lib/types";
 
 function daysBetween(start: string, end: string): number {
   const s = new Date(start).getTime();
   const e = new Date(end).getTime();
   return Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
 }
-
-const VISIBILITY_ICON: Record<Visibility, { icon: string; label: string }> = {
-  private: { icon: "🔒", label: "私人" },
-  unlisted: { icon: "🔗", label: "非公開" },
-  public: { icon: "🌍", label: "公開" },
-};
 
 export default async function TripsPage() {
   const supabase = await createClient();
@@ -66,20 +62,22 @@ export default async function TripsPage() {
         <ul className="space-y-3">
           {list.map((t) => (
             <li key={t.id} className="relative rounded-xl bg-card shadow-sm">
-              <span
-                aria-label={`可見性：${VISIBILITY_ICON[t.visibility].label}`}
-                title={VISIBILITY_ICON[t.visibility].label}
-                className="absolute right-3 top-3 text-base leading-none"
-              >
-                {VISIBILITY_ICON[t.visibility].icon}
-              </span>
-              {/* 查閱區：點擊進入前台 view */}
+              {/* Visibility badge — its own click target. Sits absolute over
+                  the top-right; the info Link below uses `mr-12` to step its
+                  hit-area back so tapping the badge can't graze the link. */}
+              <VisibilityBadgeButton
+                trip={t}
+                className="absolute right-2 top-2 z-10"
+              />
+
+              {/* Info area — clickable into /trips/[id], hit-area stops short
+                  of the badge. */}
               <Link
                 href={`/trips/${t.id}`}
-                className="flex items-center gap-3 px-4 pt-4 pb-3 transition hover:opacity-80"
+                className="flex items-center gap-3 rounded-t-xl px-4 pt-4 pb-3 mr-12 transition hover:bg-card-pure"
               >
                 <div className="text-2xl">{t.cover_emoji}</div>
-                <div className="min-w-0 flex-1 pr-6">
+                <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-bold text-ink">
                     {t.title}
                   </div>
@@ -95,11 +93,16 @@ export default async function TripsPage() {
                     <span>· {daysBetween(t.start_date, t.end_date)} 天</span>
                   </div>
                 </div>
-                <span className="text-muted">›</span>
               </Link>
 
-              {/* 管理操作列 */}
+              {/* Action bar: 檢閱 / 編輯 / 記帳 / 分享(條件) / 🗑 */}
               <div className="flex items-center gap-1 border-t border-line-2 px-3 py-2">
+                <Link
+                  href={`/trips/${t.id}`}
+                  className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
+                >
+                  👀 檢閱
+                </Link>
                 <Link
                   href={`/trips/${t.id}/edit`}
                   className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
@@ -112,6 +115,9 @@ export default async function TripsPage() {
                 >
                   💴 記帳
                 </Link>
+                {t.visibility !== "private" && (
+                  <ShareButton trip={t} variant="card" />
+                )}
                 <div className="ml-auto">
                   <DeleteTripButton tripId={t.id} tripTitle={t.title} />
                 </div>

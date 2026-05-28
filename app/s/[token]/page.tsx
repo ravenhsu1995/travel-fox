@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TripView from "@/components/trip/TripView";
 import type { Day, TripForView } from "@/lib/types";
@@ -27,6 +27,13 @@ export default async function SharedTripPage({
   if (error || !data) notFound();
   const payload = data as SharedTripPayload | null;
   if (!payload?.trip) notFound();
+
+  // Public trips have a canonical URL at /samples/[id]. Token URLs still
+  // resolve for backwards compatibility (so an unlisted link doesn't die
+  // when the owner promotes the trip), but the canonical destination wins.
+  if (payload.trip.visibility === "public") {
+    redirect(`/samples/${payload.trip.id}`);
+  }
 
   return <TripView trip={payload.trip} days={payload.days ?? []} />;
 }

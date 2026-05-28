@@ -5,7 +5,7 @@ import type { Trip } from "@/lib/types";
 
 type Props = {
   trip: Pick<Trip, "id" | "visibility" | "share_token">;
-  variant?: "view" | "edit";
+  variant?: "view" | "card";
 };
 
 export default function ShareButton({ trip, variant = "view" }: Props) {
@@ -45,10 +45,16 @@ export default function ShareButton({ trip, variant = "view" }: Props) {
     }
   }
 
+  // Two visual treatments:
+  //   card — sits in the /trips card action bar alongside 編輯/記帳; matches
+  //          their muted, text-only look so the row stays calm.
+  //   view — header on /trips/[id]; uses the same outline-pill language as
+  //          the "查看範例行程" CTA on the home page (teal outline, white-ish
+  //          fill, fill only emerges on hover).
   const buttonClass =
-    variant === "edit"
-      ? "inline-flex h-10 items-center gap-1.5 rounded-lg bg-teal/10 px-3 text-sm font-semibold text-teal hover:bg-teal/20"
-      : "inline-flex h-8 items-center gap-1 rounded-full bg-teal/10 px-3 text-xs font-semibold text-teal hover:bg-teal/20";
+    variant === "card"
+      ? "inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure"
+      : "inline-flex h-8 items-center gap-1 rounded-full border border-teal/40 bg-card-pure px-3 text-xs font-semibold text-teal shadow-sm hover:bg-teal/10";
 
   return (
     <div className="relative">
