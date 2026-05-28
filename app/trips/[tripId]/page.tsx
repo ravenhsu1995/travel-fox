@@ -32,7 +32,7 @@ export default async function TripDetailPage({
       <div className="mx-auto w-full max-w-[480px] px-4 pt-3">
         <Link
           href="/trips"
-          className="inline-flex h-9 items-center text-base font-semibold text-muted hover:text-ink"
+          className="inline-flex h-8 items-center text-sm font-semibold text-muted hover:text-ink"
         >
           ← 我的行程
         </Link>
