@@ -47,9 +47,7 @@ export default async function TripDetailPage({
         >
           ← 我的行程
         </Link>
-        {trip.visibility !== "private" && (
-          <ShareButton trip={trip} variant="view" />
-        )}
+        {trip.visibility !== "private" && <ShareButton trip={trip} />}
       </div>
 
       {/* 純查閱：不傳 canEdit / showExpenseLink，預設 false */}
