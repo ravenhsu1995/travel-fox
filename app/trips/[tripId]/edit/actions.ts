@@ -1,7 +1,7 @@
 "use server";
 
 import { getAccessToken, pgrest } from "@/lib/supabase/rest";
-import type { Day, HotelInfo, TimelineItem, Trip, Visibility } from "@/lib/types";
+import type { Day, HotelInfo, TimelineItem, Trip } from "@/lib/types";
 import { normalizeJoinedLocationChips } from "@/lib/location-chips";
 
 // NOTE: All mutations here use direct PostgREST fetch (via @/lib/supabase/rest)
@@ -211,59 +211,6 @@ export async function deleteDay(dayId: string, tripId: string) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return { ok: false, error: msg } as const;
-  }
-}
-
-type UpdateVisibilityResult =
-  | {
-      ok: true;
-      visibility: Visibility;
-      share_token: string | null;
-      public_display_name: string | null;
-    }
-  | { ok: false; error: string };
-
-export async function updateVisibility(
-  tripId: string,
-  visibility: Visibility,
-  publicDisplayName: string | null,
-): Promise<UpdateVisibilityResult> {
-  try {
-    const jwt = await getAccessToken();
-    if (!jwt) return { ok: false, error: "未登入" };
-
-    const result = await pgrest<{
-      visibility: Visibility;
-      share_token: string | null;
-      public_display_name: string | null;
-    }>({
-      method: "POST",
-      path: "/rest/v1/rpc/update_trip_visibility",
-      jwt,
-      body: {
-        p_trip_id: tripId,
-        p_visibility: visibility,
-        p_public_display_name: publicDisplayName,
-      },
-    });
-    if (!result.ok) return { ok: false, error: result.error };
-
-    // NOTE: deliberately no revalidatePath. Calling it from a Server Action
-    // makes Next.js re-render the current page in the action response, which
-    // collides with @supabase/ssr's cookie-refresh path and surfaces as
-    // "this page couldn't load" on Vercel. Same reason saveTrip/saveDay
-    // skip revalidate. Client-side setTrip handles the immediate UI update;
-    // /samples and /trips have `revalidate = 60` so they self-refresh.
-
-    return {
-      ok: true,
-      visibility: result.data.visibility,
-      share_token: result.data.share_token,
-      public_display_name: result.data.public_display_name,
-    };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: msg };
   }
 }
 

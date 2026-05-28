@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import type { Trip, Visibility } from "@/lib/types";
-import { updateVisibility } from "@/app/trips/[tripId]/edit/actions";
 import ShareButton from "@/components/trip/ShareButton";
 
 type Props = {
@@ -19,6 +18,15 @@ const OPTIONS: { value: Visibility; icon: string; title: string; desc: string }[
   { value: "public", icon: "🌍", title: "公開", desc: "出現在範例行程列表" },
 ];
 
+type ApiResult =
+  | {
+      ok: true;
+      visibility: Visibility;
+      share_token: string | null;
+      public_display_name: string | null;
+    }
+  | { ok: false; error?: string };
+
 export default function VisibilitySection({ trip, onChange, onFlash }: Props) {
   const [picked, setPicked] = useState<Visibility>(trip.visibility);
   const [name, setName] = useState<string>(trip.public_display_name ?? "");
@@ -31,21 +39,36 @@ export default function VisibilitySection({ trip, onChange, onFlash }: Props) {
 
   function onSave() {
     startSave(async () => {
-      const result = await updateVisibility(
-        trip.id,
-        picked,
-        picked === "public" ? name : null,
-      );
-      if (!result.ok) {
-        onFlash("err", `可見性更新失敗：${result.error}`);
+      let data: ApiResult;
+      try {
+        const res = await fetch(`/api/trips/${trip.id}/visibility`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            visibility: picked,
+            public_display_name: picked === "public" ? name : null,
+          }),
+        });
+        const body = (await res.json().catch(() => null)) as ApiResult | null;
+        if (!res.ok || !body || !body.ok) {
+          const err =
+            (body && "error" in body && body.error) || `HTTP ${res.status}`;
+          onFlash("err", `可見性更新失敗：${err}`);
+          return;
+        }
+        data = body;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        onFlash("err", `可見性更新失敗：${msg}`);
         return;
       }
+
       onChange({
-        visibility: result.visibility,
-        share_token: result.share_token,
-        public_display_name: result.public_display_name,
+        visibility: data.visibility,
+        share_token: data.share_token,
+        public_display_name: data.public_display_name,
       });
-      onFlash("ok", flashMessage(result.visibility));
+      onFlash("ok", flashMessage(data.visibility));
     });
   }
 
