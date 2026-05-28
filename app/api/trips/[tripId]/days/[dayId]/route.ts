@@ -47,7 +47,7 @@ function validatePayload(body: SaveDayBody): string | null {
       const err =
         validateCostShape(it.transport, `${prefix}.transport`) ||
         validateCostShape(it.meal, `${prefix}.meal`) ||
-        validateCostShape(it.exp, `${prefix}.exp`);
+        validateCostShape(it.spot, `${prefix}.spot`);
       if (err) return err;
     }
   }

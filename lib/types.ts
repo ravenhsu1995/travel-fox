@@ -28,16 +28,16 @@ export type MealBlock = {
   costCurrency?: Currency;
 };
 
-export type ExperienceItem = {
+export type SpotItem = {
   headline?: string;
-  spot: string;
+  name: string;
   cost?: string;
   costAmount?: number;
   costCurrency?: Currency;
   desc?: string;
 };
 
-export type TimelineType = "transport" | "meal" | "exp";
+export type TimelineType = "transport" | "meal" | "spot";
 
 export const RATINGS = ["ㄅ", "ㄆ", "ㄇ", "ㄈ", "ㄉ"] as const;
 export type Rating = (typeof RATINGS)[number];
@@ -47,7 +47,7 @@ export type TimelineItem = {
   type: TimelineType;
   transport?: TransportOption;
   meal?: MealBlock;
-  exp?: ExperienceItem;
+  spot?: SpotItem;
   excluded?: boolean;
   rating?: Rating;
   comment?: string;

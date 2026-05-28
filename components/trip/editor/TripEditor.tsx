@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import type {
   Currency,
   Day,
-  ExperienceItem,
   HotelInfo,
   MealBlock,
+  SpotItem,
   TimelineItem,
   TransportOption,
   Trip,
@@ -55,8 +55,8 @@ function validateDay(day: Day): string | null {
       const err = validateCostFields(it.meal, `${label} 餐飲`);
       if (err) return err;
     }
-    if (it.exp) {
-      const err = validateCostFields(it.exp, `${label} 體驗`);
+    if (it.spot) {
+      const err = validateCostFields(it.spot, `${label} 景點`);
       if (err) return err;
     }
   }
@@ -847,7 +847,7 @@ const TYPE_META: Record<
 > = {
   transport: { label: "交通", icon: "🚆", badgeCls: "bg-success/15 text-success" },
   meal: { label: "餐飲", icon: "🍽", badgeCls: "bg-gold/15 text-gold" },
-  exp: { label: "體驗", icon: "✨", badgeCls: "bg-info/15 text-info" },
+  spot: { label: "景點", icon: "✨", badgeCls: "bg-info/15 text-info" },
 };
 
 function emptyByType(type: TimelineItem["type"]): TimelineItem {
@@ -855,7 +855,7 @@ function emptyByType(type: TimelineItem["type"]): TimelineItem {
     return { time: "09:00", type, transport: { tool: "", from: "", to: "" } };
   if (type === "meal")
     return { time: "09:00", type, meal: { type: "午餐", name: "" } };
-  return { time: "09:00", type, exp: { spot: "" } };
+  return { time: "09:00", type, spot: { name: "" } };
 }
 
 function TimelineListEditor({
@@ -885,7 +885,7 @@ function TimelineListEditor({
     <div className="space-y-3">
       <h3 className="text-sm font-bold text-navy">⏱ 時間軸</h3>
       <div className="flex gap-2">
-        {(["transport", "meal", "exp"] as const).map((t) => (
+        {(["transport", "meal", "spot"] as const).map((t) => (
           <button
             key={t}
             onClick={() => addItem(t)}
@@ -897,7 +897,7 @@ function TimelineListEditor({
       </div>
       {items.length === 0 && (
         <div className="rounded-lg border border-dashed border-line-2 bg-card-pure p-5 text-center text-xs text-muted">
-          這一天還沒有時間安排，點上方按鈕新增交通／餐飲／體驗
+          這一天還沒有時間安排，點上方按鈕新增交通／餐飲／景點
         </div>
       )}
       {items.map((it, i) => (
@@ -972,10 +972,10 @@ function TimelineItemEditor({
           onChange={(m) => onChange({ meal: m })}
         />
       )}
-      {item.type === "exp" && (
-        <ExpEditor
-          value={item.exp ?? { spot: "" }}
-          onChange={(e) => onChange({ exp: e })}
+      {item.type === "spot" && (
+        <SpotEditor
+          value={item.spot ?? { name: "" }}
+          onChange={(s) => onChange({ spot: s })}
         />
       )}
     </Card>
@@ -1155,19 +1155,19 @@ function MealEditor({
   );
 }
 
-function ExpEditor({
+function SpotEditor({
   value,
   onChange,
 }: {
-  value: ExperienceItem;
-  onChange: (e: ExperienceItem) => void;
+  value: SpotItem;
+  onChange: (s: SpotItem) => void;
 }) {
   return (
     <div className="space-y-2 rounded-md border border-line bg-card-pure p-2.5">
       <TextInput
-        placeholder="景點/體驗名稱"
-        value={value.spot}
-        onChange={(v) => onChange({ ...value, spot: v })}
+        placeholder="景點名稱"
+        value={value.name}
+        onChange={(v) => onChange({ ...value, name: v })}
       />
 
       <TextArea

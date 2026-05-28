@@ -15,7 +15,7 @@ function transportEmoji(tool: string): string {
 const TYPE_BADGE: Record<TimelineItem["type"], { label: string; cls: string }> = {
   transport: { label: "交通", cls: "text-success" },
   meal: { label: "餐飲", cls: "text-gold" },
-  exp: { label: "體驗", cls: "text-info" },
+  spot: { label: "景點", cls: "text-info" },
 };
 
 // Whitelist mapping — runtime data lives in days.timeline JSON and could
@@ -96,16 +96,17 @@ export default function TimelineItemView({
           </div>
         )}
 
-        {item.type === "exp" && item.exp && (
-          <div className="rounded-md border border-line bg-card-pure p-2.5 text-xs">
-            <div className="mt-0.5 font-bold text-ink">✨ {item.exp.spot}</div>
-            {item.exp.desc && (
-              <div className="mt-0.5 text-muted">{item.exp.desc}</div>
+        {item.type === "spot" && item.spot && (
+          <div className="relative rounded-md border border-line bg-card-pure p-2.5 pr-12 text-xs">
+            <MapButton href={googleMapUrl(item.spot.name)} />
+            <div className="mt-0.5 font-bold text-ink">✨ {item.spot.name}</div>
+            {item.spot.desc && (
+              <div className="mt-0.5 text-muted">{item.spot.desc}</div>
             )}
             <CostBadge
-              value={item.exp.cost}
-              amount={item.exp.costAmount}
-              currency={item.exp.costCurrency}
+              value={item.spot.cost}
+              amount={item.spot.costAmount}
+              currency={item.spot.costCurrency}
             />
           </div>
         )}

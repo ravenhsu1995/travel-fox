@@ -11,7 +11,7 @@ export type DerivedExpense = {
   sourceDayId: string;
   /** null for hotel-type (which lives outside the timeline array). */
   sourceIndex: number | null;
-  itemType: "transport" | "meal" | "exp" | "hotel";
+  itemType: "transport" | "meal" | "spot" | "hotel";
   excluded: boolean;
   legacy?: string;
 };
@@ -36,13 +36,13 @@ export type LegacyCostRow = {
   legacy: string;
   date: string;
   sourceDayId: string;
-  itemType: "transport" | "meal" | "exp" | "hotel";
+  itemType: "transport" | "meal" | "spot" | "hotel";
 };
 
 const CATEGORY = {
   transport: "🚆 交通",
   meal: "🍽 餐飲",
-  exp: "✨ 體驗",
+  spot: "✨ 景點",
   hotel: "🏨 住宿",
 } as const;
 
@@ -158,31 +158,31 @@ export function deriveExpensesFromTrip(days: Day[]): DeriveResult {
         }
       }
 
-      if (it.type === "exp" && it.exp) {
-        const e = it.exp;
-        const desc = e.spot || e.headline || "體驗";
-        if (typeof e.costAmount === "number" && e.costAmount > 0 && e.costCurrency) {
+      if (it.type === "spot" && it.spot) {
+        const s = it.spot;
+        const desc = s.name || s.headline || "景點";
+        if (typeof s.costAmount === "number" && s.costAmount > 0 && s.costCurrency) {
           derived.push({
             kind: "derived",
             key: baseKey,
-            amount: e.costAmount,
-            currency: e.costCurrency,
-            category: CATEGORY.exp,
+            amount: s.costAmount,
+            currency: s.costCurrency,
+            category: CATEGORY.spot,
             description: desc,
             date: day.date,
             sourceDayId: day.id,
             sourceIndex: i,
-            itemType: "exp",
+            itemType: "spot",
             excluded: it.excluded ?? false,
           });
-        } else if (e.cost) {
+        } else if (s.cost) {
           legacy.push({
             key: `${baseKey}:legacy`,
             description: desc,
-            legacy: e.cost,
+            legacy: s.cost,
             date: day.date,
             sourceDayId: day.id,
-            itemType: "exp",
+            itemType: "spot",
           });
         }
       }
