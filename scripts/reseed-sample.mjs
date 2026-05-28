@@ -23,17 +23,33 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 });
 
 const SAMPLE_TRIP_ID = '00000000-0000-0000-0000-000000000001';
+const SAMPLE_OWNER_EMAIL = 'ravenhsu1995@gmail.com';
 
 const trip = {
   id: SAMPLE_TRIP_ID,
-  owner_id: null,
+  owner_id: null, // filled in at runtime by findOwnerByEmail()
   title: '2026 關西行',
   subtitle: '神戶 · 鳥取 · 岡山',
   start_date: '2026-05-02',
   end_date: '2026-05-10',
   cover_emoji: '🌠',
   is_public_sample: true,
+  visibility: 'public',
+  public_display_name: '芒果狐狸',
+  share_show_feedback: false,
 };
+
+async function findOwnerByEmail(email) {
+  const target = email.toLowerCase();
+  for (let page = 1; page <= 50; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw new Error('listUsers failed: ' + error.message);
+    const hit = data.users.find((u) => u.email?.toLowerCase() === target);
+    if (hit) return hit;
+    if (data.users.length < 200) return null;
+  }
+  return null;
+}
 
 const days = [
   {
@@ -84,6 +100,17 @@ const days = [
 ];
 
 async function run() {
+  console.log(`🔍  Looking up owner ${SAMPLE_OWNER_EMAIL}...`);
+  const owner = await findOwnerByEmail(SAMPLE_OWNER_EMAIL);
+  if (!owner) {
+    console.error(
+      `❌ ${SAMPLE_OWNER_EMAIL} 尚未註冊。請先用該 email 登入過一次，再重新執行 reseed。`,
+    );
+    process.exit(1);
+  }
+  trip.owner_id = owner.id;
+  console.log(`   ✓ owner = ${owner.id}`);
+
   console.log('🗑  Deleting old sample data...');
   const { error: e1 } = await supabase.from('days').delete().eq('trip_id', SAMPLE_TRIP_ID);
   if (e1) throw new Error('Delete days failed: ' + e1.message);

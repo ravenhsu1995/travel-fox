@@ -18,6 +18,18 @@ export async function PATCH(
     return NextResponse.json({ ok: false, error: "未登入" }, { status: 401 });
   }
 
+  const probe = await pgrest<{ is_public_sample: boolean }[]>({
+    method: "GET",
+    path: `/rest/v1/trips?id=eq.${tripId}&select=is_public_sample`,
+    jwt,
+  });
+  if (probe.ok && probe.data?.[0]?.is_public_sample) {
+    return NextResponse.json(
+      { ok: false, error: "範例行程的可見度已固定為公開" },
+      { status: 403 },
+    );
+  }
+
   let body: Body;
   try {
     body = (await request.json()) as Body;

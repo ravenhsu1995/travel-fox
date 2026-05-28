@@ -4,7 +4,10 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Trip, Visibility } from "@/lib/types";
 
-type TripSlice = Pick<Trip, "id" | "visibility" | "public_display_name">;
+type TripSlice = Pick<
+  Trip,
+  "id" | "visibility" | "public_display_name" | "is_public_sample"
+>;
 
 type Props = {
   trip: TripSlice;
@@ -83,6 +86,10 @@ function VisibilityDialog({
       (name.trim() || null) !== (trip.public_display_name ?? null));
 
   function onSave() {
+    if (trip.is_public_sample) {
+      onClose();
+      return;
+    }
     setError(null);
     startSave(async () => {
       try {
@@ -135,73 +142,93 @@ function VisibilityDialog({
           </button>
         </div>
 
-        <div className="space-y-2">
-          {OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
-                picked === opt.value
-                  ? "border-gold bg-gold/5"
-                  : "border-line-2 hover:bg-card"
-              }`}
-            >
-              <input
-                type="radio"
-                name={`visibility-${trip.id}`}
-                value={opt.value}
-                checked={picked === opt.value}
-                onChange={() => setPicked(opt.value)}
-                className="mt-0.5 accent-gold"
-              />
+        {trip.is_public_sample ? (
+          <>
+            <div className="flex items-start gap-3 rounded-lg border border-line-2 bg-card p-3">
+              <span className="text-base leading-none">🌍</span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-ink">
-                  <span className="mr-1">{opt.icon}</span>
-                  {opt.title}
+                <div className="text-sm font-semibold text-ink">公開</div>
+                <div className="text-[11px] text-muted">
+                  此為範例行程，可見度固定為公開，無法切換。
                 </div>
-                <div className="text-[11px] text-muted">{opt.desc}</div>
               </div>
-            </label>
-          ))}
-        </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-10 w-full rounded-lg bg-navy text-sm font-semibold text-white shadow-sm hover:bg-navy-lt"
+            >
+              知道了
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
+                    picked === opt.value
+                      ? "border-gold bg-gold/5"
+                      : "border-line-2 hover:bg-card"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`visibility-${trip.id}`}
+                    value={opt.value}
+                    checked={picked === opt.value}
+                    onChange={() => setPicked(opt.value)}
+                    className="mt-0.5 accent-gold"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-ink">
+                      <span className="mr-1">{opt.icon}</span>
+                      {opt.title}
+                    </div>
+                    <div className="text-[11px] text-muted">{opt.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
 
-        {picked === "public" && (
-          <div>
-            <label className="text-[11px] font-semibold text-muted">
-              製作人姓名（在範例行程中想顯示的名字，留空 = 匿名狐狸）
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={30}
-              placeholder="例如：芒果狐狸"
-              className="mt-1 h-10 w-full rounded-lg border border-line-2 bg-card px-3 text-sm outline-none focus:border-gold"
-            />
-          </div>
+            {picked === "public" && (
+              <div>
+                <label className="text-[11px] font-semibold text-muted">
+                  製作人姓名（在範例行程中想顯示的名字，留空 = 匿名狐狸）
+                </label>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={30}
+                  placeholder="例如：芒果狐狸"
+                  className="mt-1 h-10 w-full rounded-lg border border-line-2 bg-card px-3 text-sm outline-none focus:border-gold"
+                />
+              </div>
+            )}
+
+            {picked === "private" && trip.visibility !== "private" && (
+              <p className="rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+                切到私人後，現有連結會顯示「此行程目前為私人」。
+              </p>
+            )}
+
+            {error && (
+              <p className="rounded-md bg-danger/10 px-3 py-2 text-[11px] text-danger">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={!dirty || saving}
+              className="h-10 w-full rounded-lg bg-navy text-sm font-semibold text-white shadow-sm hover:bg-navy-lt disabled:opacity-50"
+            >
+              {saving ? "更新中…" : "更新瀏覽權限"}
+            </button>
+          </>
         )}
-
-        {/* Token rule: the share URL is a permanent per-trip identifier.
-            Private state just blanks the contents on /s/[token]; switching
-            back to non-private restores access on the same URL. */}
-        {picked === "private" && trip.visibility !== "private" && (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
-            切到私人後，現有連結會顯示「此行程目前為私人」。
-          </p>
-        )}
-
-        {error && (
-          <p className="rounded-md bg-danger/10 px-3 py-2 text-[11px] text-danger">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={!dirty || saving}
-          className="h-10 w-full rounded-lg bg-navy text-sm font-semibold text-white shadow-sm hover:bg-navy-lt disabled:opacity-50"
-        >
-          {saving ? "更新中…" : "更新瀏覽權限"}
-        </button>
       </div>
     </div>
   );

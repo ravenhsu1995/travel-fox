@@ -117,9 +117,11 @@ export default async function TripsPage() {
                   記帳
                 </Link>
                 {t.visibility !== "private" && <ShareButton trip={t} />}
-                <div className="ml-auto">
-                  <DeleteTripButton tripId={t.id} tripTitle={t.title} />
-                </div>
+                {!t.is_public_sample && (
+                  <div className="ml-auto">
+                    <DeleteTripButton tripId={t.id} tripTitle={t.title} />
+                  </div>
+                )}
               </div>
             </li>
           ))}

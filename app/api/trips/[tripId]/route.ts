@@ -193,6 +193,19 @@ export async function DELETE(
     }
 
     const { tripId } = await params;
+
+    const probe = await pgrest<{ is_public_sample: boolean }[]>({
+      method: "GET",
+      path: `/rest/v1/trips?id=eq.${tripId}&select=is_public_sample`,
+      jwt,
+    });
+    if (probe.ok && probe.data?.[0]?.is_public_sample) {
+      return NextResponse.json(
+        { ok: false, error: "範例行程無法刪除" },
+        { status: 403 },
+      );
+    }
+
     const result = await pgrest({
       method: "DELETE",
       path: `/rest/v1/trips?id=eq.${tripId}`,
