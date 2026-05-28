@@ -8,6 +8,7 @@ import HotelCard from "./HotelCard";
 import TimelineItemView from "./TimelineItemView";
 import { resolveDayHotel } from "@/lib/resolveDayHotel";
 import { mascotIndexForDay } from "@/lib/mascot-for-day";
+import { normalizeDays } from "@/lib/timeline-compat";
 import { PencilIcon, WalletIcon } from "@/components/icons";
 
 type Props = {
@@ -24,7 +25,7 @@ export default function TripView({
   showExpenseLink = false,
 }: Props) {
   const sorted = useMemo(
-    () => [...days].sort((a, b) => a.sort_order - b.sort_order),
+    () => normalizeDays(days).sort((a, b) => a.sort_order - b.sort_order),
     [days],
   );
   const [activeIdx, setActiveIdx] = useState(0);

@@ -24,6 +24,7 @@ import {
   daysRemainingFrom,
   type ResolvedHotel,
 } from "@/lib/resolveDayHotel";
+import { normalizeDays } from "@/lib/timeline-compat";
 import { PencilIcon, SaveIcon, TrashIcon } from "@/components/icons";
 
 type CostFields = {
@@ -204,7 +205,7 @@ export default function TripEditor({
 }: Props) {
   const router = useRouter();
   const [trip, setTrip] = useState<Trip>(initialTrip);
-  const [days, setDays] = useState<Day[]>(initialDays);
+  const [days, setDays] = useState<Day[]>(() => normalizeDays(initialDays));
   const [activeDayId, setActiveDayId] = useState<string>(
     initialDayId ?? initialDays[0]?.id ?? "",
   );

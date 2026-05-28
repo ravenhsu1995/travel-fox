@@ -1,4 +1,5 @@
 import type { Currency, Day, Expense, TimelineItem } from "@/lib/types";
+import { normalizeTimelineItem } from "@/lib/timeline-compat";
 
 export type DerivedExpense = {
   kind: "derived";
@@ -98,7 +99,7 @@ export function deriveExpensesFromTrip(days: Day[]): DeriveResult {
     }
 
     for (let i = 0; i < day.timeline.length; i++) {
-      const it = day.timeline[i];
+      const it = normalizeTimelineItem(day.timeline[i]);
       const baseKey = `derived:${day.id}:${i}:${it.type}`;
 
       if (it.type === "transport" && it.transport) {

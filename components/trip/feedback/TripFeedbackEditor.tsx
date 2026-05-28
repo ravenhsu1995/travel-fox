@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import type { Day, Rating, TimelineItem, Trip } from "@/lib/types";
 import { RATINGS } from "@/lib/types";
+import { normalizeDays } from "@/lib/timeline-compat";
 import TimelineItemView from "../TimelineItemView";
 import { MessageSquareIcon, SaveIcon } from "@/components/icons";
 
@@ -18,7 +19,7 @@ export default function TripFeedbackEditor({
   initialTrip,
   initialDays,
 }: Props) {
-  const sortedInitial = [...initialDays].sort((a, b) => a.sort_order - b.sort_order);
+  const sortedInitial = normalizeDays(initialDays).sort((a, b) => a.sort_order - b.sort_order);
 
   const [trip, setTrip] = useState(initialTrip);
   const [days, setDays] = useState<Day[]>(sortedInitial);

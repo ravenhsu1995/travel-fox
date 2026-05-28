@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Rating, TimelineItem } from "@/lib/types";
 import { googleMapUrl } from "@/lib/maps";
+import { normalizeTimelineItem } from "@/lib/timeline-compat";
 import CostBadge from "./CostBadge";
 import MapButton from "./MapButton";
 
@@ -38,9 +39,10 @@ export default function TimelineItemView({
   item,
   showFeedbackDecorations = true,
 }: Props) {
-  const badge = TYPE_BADGE[item.type];
-  const stampSrc = showFeedbackDecorations && item.rating ? RATING_STAMP_SRC[item.rating] : undefined;
-  const commentText = showFeedbackDecorations ? item.comment?.trim() : undefined;
+  const normalizedItem = normalizeTimelineItem(item);
+  const badge = TYPE_BADGE[normalizedItem.type];
+  const stampSrc = showFeedbackDecorations && normalizedItem.rating ? RATING_STAMP_SRC[normalizedItem.rating] : undefined;
+  const commentText = showFeedbackDecorations ? normalizedItem.comment?.trim() : undefined;
 
   return (
     <article className="relative pl-14">
@@ -54,59 +56,59 @@ export default function TimelineItemView({
       </div>
 
       <div className="relative">
-        {item.type === "transport" && item.transport && (
+        {normalizedItem.type === "transport" && normalizedItem.transport && (
           <div className="rounded-md border border-success/40 bg-success/5 p-2.5 text-xs">
             <div className="mb-0.5 flex items-center gap-2">
               <span className="font-bold text-ink">
-                {transportEmoji(item.transport.tool)} {item.transport.tool}
+                {transportEmoji(normalizedItem.transport.tool)} {normalizedItem.transport.tool}
               </span>
-              {item.transport.duration && (
-                <span className="ml-auto text-muted">{item.transport.duration}</span>
+              {normalizedItem.transport.duration && (
+                <span className="ml-auto text-muted">{normalizedItem.transport.duration}</span>
               )}
             </div>
             <div className="text-muted">
-              {item.transport.from} → {item.transport.to}
+              {normalizedItem.transport.from} → {normalizedItem.transport.to}
             </div>
             <CostBadge
-              value={item.transport.cost}
-              amount={item.transport.costAmount}
-              currency={item.transport.costCurrency}
+              value={normalizedItem.transport.cost}
+              amount={normalizedItem.transport.costAmount}
+              currency={normalizedItem.transport.costCurrency}
             />
-            {item.transport.note && (
-              <div className="mt-1 text-[11px] text-muted">{item.transport.note}</div>
+            {normalizedItem.transport.note && (
+              <div className="mt-1 text-[11px] text-muted">{normalizedItem.transport.note}</div>
             )}
           </div>
         )}
 
-        {item.type === "meal" && item.meal && (
+        {normalizedItem.type === "meal" && normalizedItem.meal && (
           <div className="relative rounded-md bg-gold-pale p-2.5 pr-12 text-xs">
-            <MapButton href={googleMapUrl(item.meal.name)} />
+            <MapButton href={googleMapUrl(normalizedItem.meal.name)} />
             <div className="mb-1 flex items-center justify-between">
-              <span className="font-bold text-gold">🍽 {item.meal.type}</span>
+              <span className="font-bold text-gold">🍽 {normalizedItem.meal.type}</span>
             </div>
-            <div className="font-bold text-ink">{item.meal.name}</div>
-            {item.meal.dishes && (
-              <div className="mt-0.5 text-muted">{item.meal.dishes}</div>
+            <div className="font-bold text-ink">{normalizedItem.meal.name}</div>
+            {normalizedItem.meal.dishes && (
+              <div className="mt-0.5 text-muted">{normalizedItem.meal.dishes}</div>
             )}
             <CostBadge
-              value={item.meal.cost}
-              amount={item.meal.costAmount}
-              currency={item.meal.costCurrency}
+              value={normalizedItem.meal.cost}
+              amount={normalizedItem.meal.costAmount}
+              currency={normalizedItem.meal.costCurrency}
             />
           </div>
         )}
 
-        {item.type === "spot" && item.spot && (
+        {normalizedItem.type === "spot" && normalizedItem.spot && (
           <div className="relative rounded-md border border-line bg-card-pure p-2.5 pr-12 text-xs">
-            <MapButton href={googleMapUrl(item.spot.name)} />
-            <div className="mt-0.5 font-bold text-ink">✨ {item.spot.name}</div>
-            {item.spot.desc && (
-              <div className="mt-0.5 text-muted">{item.spot.desc}</div>
+            <MapButton href={googleMapUrl(normalizedItem.spot.name)} />
+            <div className="mt-0.5 font-bold text-ink">✨ {normalizedItem.spot.name}</div>
+            {normalizedItem.spot.desc && (
+              <div className="mt-0.5 text-muted">{normalizedItem.spot.desc}</div>
             )}
             <CostBadge
-              value={item.spot.cost}
-              amount={item.spot.costAmount}
-              currency={item.spot.costCurrency}
+              value={normalizedItem.spot.cost}
+              amount={normalizedItem.spot.costAmount}
+              currency={normalizedItem.spot.costCurrency}
             />
           </div>
         )}
