@@ -184,12 +184,13 @@ export default async function Home() {
           className="flex min-h-[54px] items-center justify-center gap-2.5 rounded-full bg-orange px-5 text-[16px] font-extrabold tracking-wide text-white shadow-md transition hover:bg-orange-lt active:scale-[0.98]"
           style={{ fontFamily: "var(--font-serif)" }}
         >
-          <svg width="18" height="18" className="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M12 20v-8" />
-            <path d="M12 12c0-3 2-6 6-6 0 4-2 6-6 6Z" />
-            <path d="M12 14c0-2-1.5-4-4-4 0 3 1.5 4 4 4Z" />
+          <svg width="18" height="18" className="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M4 7L7 4L10 7L14 7L17 4L20 7Q17 15 12 18Q7 15 4 7Z" />
+            <path d="M9 11L9.01 11" />
+            <path d="M15 11L15.01 11" />
+            <path d="M12 14L12.01 14" />
           </svg>
-          開始規劃行程
+          開始規劃我的旅程
         </Link>
       </section>
     </main>

@@ -31,7 +31,7 @@ export default async function SamplesPage() {
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-4 pt-5 pb-10">
       <div className="mb-1 flex items-center justify-between">
-        <h1 className="text-xl font-extrabold text-navy">狐狸朋友們的精彩行程</h1>
+        <h1 className="text-xl font-extrabold text-navy">精彩旅程</h1>
         <Link
           href="/"
           className="text-xs font-semibold text-muted hover:text-ink"
