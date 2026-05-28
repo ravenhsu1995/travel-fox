@@ -98,20 +98,22 @@ export default function TimelineItemView({
           </div>
         )}
 
-        {normalizedItem.type === "spot" && normalizedItem.spot && (
-          <div className="relative rounded-md border border-line bg-card-pure p-2.5 pr-12 text-xs">
-            <MapButton href={googleMapUrl(normalizedItem.spot.name)} />
-            <div className="mt-0.5 font-bold text-ink">✨ {normalizedItem.spot.name}</div>
-            {normalizedItem.spot.desc && (
-              <div className="mt-0.5 text-muted">{normalizedItem.spot.desc}</div>
-            )}
-            <CostBadge
-              value={normalizedItem.spot.cost}
-              amount={normalizedItem.spot.costAmount}
-              currency={normalizedItem.spot.costCurrency}
-            />
-          </div>
-        )}
+        {normalizedItem.type === "spot" && normalizedItem.spot && (() => {
+          const s = normalizedItem.spot;
+          const isMinimal = !s.desc && !s.cost && s.costAmount == null;
+          return (
+            <div className="relative rounded-md border border-line bg-card-pure p-2.5 pr-12 text-xs">
+              <MapButton href={googleMapUrl(s.name)} vCenter={isMinimal} />
+              <div className="mt-0.5 font-bold text-ink">✨ {s.name}</div>
+              {s.desc && <div className="mt-0.5 text-muted">{s.desc}</div>}
+              <CostBadge
+                value={s.cost}
+                amount={s.costAmount}
+                currency={s.costCurrency}
+              />
+            </div>
+          );
+        })()}
 
         {stampSrc && (
           <Image
