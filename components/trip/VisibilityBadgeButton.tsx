@@ -41,7 +41,7 @@ export default function VisibilityBadgeButton({ trip, className }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`可見性：${current.label}（點擊更改）`}
+        aria-label={`瀏覽權限：${current.label}（點擊更改）`}
         title={`${current.label}（點擊更改）`}
         className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-base leading-none transition hover:bg-card-pure ${className ?? ""}`}
       >
@@ -121,10 +121,10 @@ function VisibilityDialog({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="可見性設定"
+        aria-label="瀏覽權限設定"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-ink">可見性</h2>
+          <h2 className="text-sm font-bold text-ink">瀏覽權限</h2>
           <button
             type="button"
             onClick={onClose}
@@ -200,7 +200,7 @@ function VisibilityDialog({
           disabled={!dirty || saving}
           className="h-10 w-full rounded-lg bg-navy text-sm font-semibold text-white shadow-sm hover:bg-navy-lt disabled:opacity-50"
         >
-          {saving ? "更新中…" : "更新可見性"}
+          {saving ? "更新中…" : "更新瀏覽權限"}
         </button>
       </div>
     </div>
