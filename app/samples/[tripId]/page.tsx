@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import TripView from "@/components/trip/TripView";
 import { stripFeedbackFromDays } from "@/lib/strip-feedback";
 import type { Day, TripForView } from "@/lib/types";
@@ -11,9 +11,9 @@ export default async function SampleTripPage({
   params,
 }: PageProps<"/samples/[tripId]">) {
   const { tripId } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
-  const { data: trip } = await supabase
+  const tripPromise = supabase
     .from("trips")
     .select(
       "id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, public_display_name, share_show_feedback, created_at",
@@ -21,14 +21,17 @@ export default async function SampleTripPage({
     .eq("id", tripId)
     .maybeSingle<TripForView>();
 
-  if (!trip) notFound();
-  if (trip.visibility !== "public" && !trip.is_public_sample) notFound();
-
-  const { data: days } = await supabase
+  const daysPromise = supabase
     .from("days")
     .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
     .eq("trip_id", tripId)
     .order("sort_order");
+
+  const { data: trip } = await tripPromise;
+  if (!trip) notFound();
+  if (trip.visibility !== "public" && !trip.is_public_sample) notFound();
+
+  const { data: days } = await daysPromise;
 
   const ownerName = trip.public_display_name?.trim() || "匿名狐狸";
   const rawDays = (days ?? []) as Day[];

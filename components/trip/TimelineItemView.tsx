@@ -117,6 +117,7 @@ export default function TimelineItemView({
 
         {stampSrc && (
           <Image
+            key={stampSrc}
             src={stampSrc}
             alt=""
             width={88}

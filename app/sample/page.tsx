@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+
+export const revalidate = 60;
 
 // Legacy route. Points to the singleton public sample (2026 關西行); if for
 // any reason that row is missing, fall back to the samples gallery so the
 // home page entry never lands on a dead end.
 export default async function SampleRedirect() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("trips")
     .select("id")

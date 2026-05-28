@@ -2,7 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete("x-travel-user-id");
+  requestHeaders.delete("x-travel-user-email");
+
+  let supabaseResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +22,9 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({
+            request: { headers: requestHeaders },
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );
@@ -28,7 +36,8 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: getClaims() validates the JWT and is the right call for auth
   // gating on the proxy boundary. Do not use getSession() here.
   const { data } = await supabase.auth.getClaims();
-  const isAuthed = !!data?.claims;
+  const claims = data?.claims;
+  const isAuthed = !!claims;
 
   const { pathname } = request.nextUrl;
   const isProtected =
@@ -41,5 +50,22 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  if (claims?.sub) {
+    requestHeaders.set("x-travel-user-id", claims.sub);
+  }
+
+  const email = claims?.email;
+  if (typeof email === "string") {
+    requestHeaders.set("x-travel-user-email", email);
+  }
+
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
+    response.cookies.set(name, value, options);
+  });
+
+  return response;
 }

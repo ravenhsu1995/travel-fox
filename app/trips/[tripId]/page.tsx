@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUserClaims } from "@/lib/auth";
 import TripView from "@/components/trip/TripView";
 import ShareButton from "@/components/trip/ShareButton";
 import type { Day, Trip } from "@/lib/types";
@@ -10,32 +11,35 @@ export default async function TripDetailPage({
 }: PageProps<"/trips/[tripId]">) {
   const { tripId } = await params;
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
-  if (!claims?.claims) redirect(`/login?redirect=/trips/${tripId}`);
+  const claims = await getUserClaims();
+  if (!claims) redirect(`/login?redirect=/trips/${tripId}`);
 
-  const { data: trip } = await supabase
+  const tripPromise = supabase
     .from("trips")
     .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, share_show_feedback, created_at")
     .eq("id", tripId)
     .maybeSingle<Trip>();
 
+  const daysPromise = supabase
+    .from("days")
+    .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
+    .eq("trip_id", tripId)
+    .order("sort_order");
+
+  const { data: trip } = await tripPromise;
   if (!trip) notFound();
 
   // Owner guard: /trips/[id] is the owner-side route. Non-owner reaching
   // a public trip's owner URL is redirected to the gallery view; anything
   // else is 404.
-  if (trip.owner_id !== claims.claims.sub) {
+  if (trip.owner_id !== claims.sub) {
     if (trip.visibility === "public" || trip.is_public_sample) {
       redirect(`/samples/${trip.id}`);
     }
     notFound();
   }
 
-  const { data: days } = await supabase
-    .from("days")
-    .select("id, trip_id, date, day_label, theme, hotel, timeline, sort_order")
-    .eq("trip_id", tripId)
-    .order("sort_order");
+  const { data: days } = await daysPromise;
 
   return (
     <>

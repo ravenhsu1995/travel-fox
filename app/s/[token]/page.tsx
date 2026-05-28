@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import TripView from "@/components/trip/TripView";
 import { stripFeedbackFromDays } from "@/lib/strip-feedback";
 import type { Day, TripForView, Visibility } from "@/lib/types";
@@ -23,7 +23,7 @@ export default async function SharedTripPage({
   const { token } = await params;
   if (!UUID_RE.test(token)) notFound();
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.rpc("get_shared_trip_by_token", {
     p_token: token,
   });

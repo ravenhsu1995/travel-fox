@@ -133,7 +133,7 @@ export default function TripView({
             <section className="rounded-xl bg-card p-4 pt-5 shadow-sm">
               <div className="space-y-5">
                 {active.timeline.map((item, i) => (
-                  <TimelineItemView key={i} item={item} />
+                  <TimelineItemView key={`${active.id}-${i}`} item={item} />
                 ))}
               </div>
             </section>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { TripForView } from "@/lib/types";
 
 export const revalidate = 60;
@@ -16,7 +16,7 @@ function displayName(t: Pick<TripForView, "public_display_name">): string {
 }
 
 export default async function SamplesPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: trips } = await supabase
     .from("trips")
     .select(

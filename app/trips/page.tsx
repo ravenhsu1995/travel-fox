@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUserClaims } from "@/lib/auth";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
 import VisibilityBadgeButton from "@/components/trip/VisibilityBadgeButton";
 import ShareButton from "@/components/trip/ShareButton";
@@ -17,13 +18,13 @@ function daysBetween(start: string, end: string): number {
 
 export default async function TripsPage() {
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
-  if (!claims?.claims) redirect("/login?redirect=/trips");
+  const claims = await getUserClaims();
+  if (!claims) redirect("/login?redirect=/trips");
 
   const { data: trips } = await supabase
     .from("trips")
     .select("id, owner_id, title, subtitle, start_date, end_date, cover_emoji, is_public_sample, visibility, share_token, public_display_name, share_show_feedback, created_at")
-    .eq("owner_id", claims.claims.sub)
+    .eq("owner_id", claims.sub)
     .order("created_at", { ascending: false });
 
   const list = (trips ?? []) as Trip[];

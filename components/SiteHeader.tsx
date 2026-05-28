@@ -1,13 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import AuthNav from "@/components/AuthNav";
 
-export default async function SiteHeader() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const isAuthed = !!data?.claims;
-  const email = data?.claims?.email as string | undefined;
-
+export default function SiteHeader() {
   return (
     <header
       className="relative z-30 mx-auto flex w-full max-w-[480px] items-center justify-between gap-3 px-5 py-3"
@@ -24,32 +19,7 @@ export default async function SiteHeader() {
           className="h-10 w-auto min-[380px]:h-12"
         />
       </Link>
-      {isAuthed ? (
-        <div className="flex shrink-0 items-center gap-2 text-xs min-[380px]:gap-3">
-          <Link
-            href="/trips"
-            className="rounded-full bg-gold-pale px-3 py-1.5 font-semibold text-gold"
-          >
-            我的行程
-          </Link>
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
-              className="rounded-full px-2 py-1.5 text-muted hover:text-ink"
-              title={email}
-            >
-              登出
-            </button>
-          </form>
-        </div>
-      ) : (
-        <Link
-          href="/login"
-          className="shrink-0 rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
-        >
-          登入
-        </Link>
-      )}
+      <AuthNav />
     </header>
   );
 }
