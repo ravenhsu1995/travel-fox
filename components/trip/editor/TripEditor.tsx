@@ -24,6 +24,7 @@ import {
   daysRemainingFrom,
   type ResolvedHotel,
 } from "@/lib/resolveDayHotel";
+import { PencilIcon, SaveIcon, TrashIcon } from "@/components/icons";
 
 type CostFields = {
   cost?: string;
@@ -432,19 +433,7 @@ export default function TripEditor({
                 "收合行程資訊"
               ) : (
                 <>
-                  <svg
-                    className="h-3.5 w-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
-                  >
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                  </svg>
+                  <PencilIcon className="h-3.5 w-3.5" />
                   行程資訊
                 </>
               )}
@@ -629,9 +618,10 @@ function TripMetaForm({
       <div className="text-center">
         <button
           onClick={onDelete}
-          className="text-xs font-semibold text-danger hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-danger hover:underline"
         >
-          🗑️ 刪除整個行程
+          <TrashIcon className="h-3.5 w-3.5" />
+          刪除整個行程
         </button>
       </div>
     </section>
@@ -691,17 +681,25 @@ function DayEditor({
       <button
         onClick={onSave}
         disabled={saving}
-        className="sticky bottom-3 z-10 h-12 w-full rounded-full bg-navy text-sm font-semibold text-white shadow-lg hover:bg-navy-lt disabled:opacity-50"
+        className="sticky bottom-3 z-10 inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-full bg-navy text-sm font-semibold text-white shadow-lg hover:bg-navy-lt disabled:opacity-50"
       >
-        {saving ? "儲存中…" : "💾 儲存這一天"}
+        {saving ? (
+          "儲存中…"
+        ) : (
+          <>
+            <SaveIcon />
+            儲存這一天
+          </>
+        )}
       </button>
 
       <div className="text-center">
         <button
           onClick={onDelete}
-          className="text-xs font-semibold text-danger hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-danger hover:underline"
         >
-          🗑 刪除這一天
+          <TrashIcon className="h-3.5 w-3.5" />
+          刪除這一天
         </button>
       </div>
     </section>

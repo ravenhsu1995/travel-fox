@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Trip } from "@/lib/types";
+import { SendIcon } from "@/components/icons";
 
 type Props = {
   trip: Pick<Trip, "id" | "visibility" | "share_token">;
@@ -45,7 +46,7 @@ export default function ShareButton({ trip }: Props) {
   }
 
   // Single quiet style across surfaces — matches the action-bar items on the
-  // /trips card (✏️ 編輯, 💴 記帳) and stays light enough not to fight the
+  // /trips card (編輯, 記帳) and stays light enough not to fight the
   // plain "← back" link sitting next to it on the view page header.
   const buttonClass =
     "inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-ink-2 hover:bg-card-pure";
@@ -59,19 +60,7 @@ export default function ShareButton({ trip }: Props) {
         className={buttonClass}
         aria-expanded={open}
       >
-        <svg
-          className="h-4 w-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="m22 2-7 20-4-9-9-4Z" />
-          <path d="M22 2 11 13" />
-        </svg>
+        <SendIcon />
         分享
       </button>
 
