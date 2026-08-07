@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Trip } from "@/lib/types";
+import { FoxIcon } from "@/components/icons";
 
 export const revalidate = 60;
 
@@ -182,12 +183,7 @@ export default async function Home() {
           href="/trips"
           className="flex min-h-[54px] items-center justify-center gap-2.5 rounded-full bg-orange px-5 text-[16px] font-bold tracking-wide text-white shadow-md transition hover:bg-orange-lt active:scale-[0.98]"
         >
-          <svg width="22" height="22" className="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M3 9L5 2L10 8L14 8L19 2L21 9L20 14L12 22L4 14Z" />
-            <circle cx="9.5" cy="13" r="1.1" fill="currentColor" stroke="none" />
-            <circle cx="14.5" cy="13" r="1.1" fill="currentColor" stroke="none" />
-            <path d="M11 16.5L13 16.5L12 18Z" fill="currentColor" stroke="none" />
-          </svg>
+          <FoxIcon className="h-[18px] w-[18px] shrink-0" />
           規劃我的旅程
         </Link>
       </section>

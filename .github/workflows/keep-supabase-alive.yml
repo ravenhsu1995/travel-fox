@@ -1,23 +1,32 @@
 name: Keep Supabase Alive
 
-# 免費方案專案閒置 7 天會被暫停，這裡每 3 天打一次 REST 端點保持活躍。
-# 也可以在 Actions 頁面手動觸發 (workflow_dispatch) 測試。
+# 免費方案專案閒置 7 天會被自動暫停。
+#
+# 重點：暫停判定看的是「Postgres 是否有真正執行查詢」。用 anon key ping 會被
+# RLS 在碰到資料表前擋掉（回 401），DB 根本沒動作 → 不算活躍（實測過會被停）。
+# 因此這裡改用 service-role key 做一次真正的 SELECT，繞過 RLS、確實在 DB 跑查詢。
 on:
   schedule:
-    - cron: '0 6 */3 * *' # 每 3 天 06:00 UTC 執行一次
+    - cron: '0 6 * * *' # 每天 06:00 UTC 執行一次
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST
+      - name: Real DB query (service role)
         run: |
           code=$(curl -s -m 30 -o /dev/null -w "%{http_code}" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/trips?select=id&limit=1")
+          echo "HTTP $code"
           if [ "$code" = "000" ] || [ -z "$code" ]; then
             echo "❌ Supabase 連不上 (HTTP $code) — 專案可能被暫停"
             exit 1
           fi
-          echo "✅ Supabase 有回應 (HTTP $code) — 活躍計時已重置"
+          if [ "$code" != "200" ]; then
+            echo "⚠️ 查詢沒回 200 (HTTP $code) — 這種請求不一定算活躍，需檢查 key/RLS"
+            exit 1
+          fi
+          echo "✅ service-role SELECT 成功 (HTTP 200) — DB 有真正跑查詢，活躍已登記"

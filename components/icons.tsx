@@ -112,3 +112,14 @@ export function MessageSquareIcon({ className }: IconProps) {
     </Frame>
   );
 }
+
+export function FoxIcon({ className }: IconProps) {
+  return (
+    <Frame className={className}>
+      <path d="M3 9 5 2 10 8 14 8 19 2 21 9 20 14 12 22 4 14Z" />
+      <circle cx="9.5" cy="13" r="1.2" />
+      <circle cx="14.5" cy="13" r="1.2" />
+      <path d="M11 16.5 13 16.5 12 18Z" />
+    </Frame>
+  );
+}
